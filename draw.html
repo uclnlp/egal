@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Drawing</title>
+
+    <!--<script type="text/x-mathjax-config">-->
+    <!--MathJax.Hub.Config({-->
+    <!--extensions: ["tex2jax.js"],-->
+    <!--jax: ["input/TeX", "output/SVG"],-->
+    <!--tex2jax: {-->
+    <!--inlineMath: [ ['$','$'], ["\\(","\\)"] ],-->
+    <!--displayMath: [ ['$$','$$'], ["\\[","\\]"] ],-->
+    <!--processEscapes: true-->
+    <!--},-->
+    <!--"HTML-CSS": { availableFonts: ["TeX"] },-->
+    <!--skipStartupTypeset: false-->
+    <!--});-->
+
+
+    <!--</script>-->
+    <!--<script type="text/javascript"-->
+    <!--src="https://cdn.mathjax.org/mathjax/latest/MathJax.js">-->
+    <!--</script>-->
+
+    <script src="/files/egal/static/jquery-3.1.1.js"></script>
+    <script src="/files/egal/static/require.js"></script>
+    <link rel="stylesheet" href="/files/egal/static/bootstrap/css/bootstrap.css">
+    <script src="/files/egal/static/bootstrap/js/bootstrap.js"></script>
+
+</head>
+
+
+<body>
+
+<div id="drup"></div>
+
+<script>
+    require.config({
+        baseUrl: '/files/egal/static/',
+        paths: {
+            jquery: 'jquery-3.1.1'
+        }
+    });
+    require(['snap.svg', 'egal'], function (snap, egal) {
+        console.log("Egal Loaded in edit_svg");
+        drupyter = new egal.Egal('#drup', "blah", {height: 600, width: "100%"});
+    });
+
+</script>
+
+</body>
+</html>
