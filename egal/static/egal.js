@@ -224,8 +224,22 @@ define(['jquery', './snap.svg'], function ($, snap) {
 
         this.onClick = function (e, element) {
             if (circle) {
-                circle = null;
+                console.log(circle.attr('cx'));
+                var cx = Number(circle.attr('cx'));
+                var cy = Number(circle.attr('cy'));
+                var radius = Number(circle.attr('r'));
+                var attr = {stroke: "#000", strokeWidth: 1, fill: '#fff'}; //fillOpacity: 0
+                var group = drupyter.snap.group(circle);
+                group.append(drupyter.snap.circle(cx, cy - radius, 5).attr(attr).addClass("endPoint up"));
+                group.append(drupyter.snap.circle(cx, cy + radius, 5).attr(attr).addClass("endPoint down"));
+                group.append(drupyter.snap.circle(cx - radius, cy, 5).attr(attr).addClass("endPoint left"));
+                group.append(drupyter.snap.circle(cx + radius, cy, 5).attr(attr).addClass("endPoint right"));
+                // var group = drupyter.snap.group(circle, upEndPoint, downEndPoint, leftEndPoint, rightEndPoint);
+                console.log(group);
+                drupyter.registerElement($(group.node));
                 drupyter.saveCurrentSVG();
+                circle = null;
+
             } else {
                 var offset = $(element).offset();
                 var x = e.pageX - offset.left;
@@ -235,12 +249,11 @@ define(['jquery', './snap.svg'], function ($, snap) {
                 circle = drupyter.snap.circle(x, y, 0);
 
                 circle.attr({
-                    fill: "#bada55",
+                    fill: "#fff",
                     stroke: "#000",
-                    strokeWidth: 5,
+                    strokeWidth: 1,
                 });
-                var remembered = circle.node;
-                drupyter.registerElement($(circle.node));
+                // var remembered = circle.node;
                 // $(circle.node).click(function (e) {
                 //     if (drupyter.currentContext.onClickElement) drupyter.currentContext.onClickElement(e, remembered);
                 // });
@@ -297,7 +310,7 @@ define(['jquery', './snap.svg'], function ($, snap) {
             $.each(listeners, function (index, value) {
                 value(elem);
             });
-        }
+        };
 
 
         this.onMouseMove = function (e, element) {
@@ -335,6 +348,11 @@ define(['jquery', './snap.svg'], function ($, snap) {
             snapElement.attr({filter: drupyter.filter});
             oldMatrix = snapElement.attr("transform").localMatrix; //$(currentSelection).attr("transform");
             moving = true;
+            // are we at the border of element?
+            console.log("BBOX");
+            console.log(snapElement);
+            console.log(snapElement.getBBox());
+
         };
 
         this.moveToFront = function () {
@@ -459,7 +477,7 @@ define(['jquery', './snap.svg'], function ($, snap) {
                     y1: b1.cy,
                     x2: b2.cx,
                     y2: b2.cy
-                }).attr({stroke: '#00ADEF'}).addClass("transient").prependTo(drupyter.snap);
+                }).attr({stroke: '#000'}).addClass("transient").prependTo(drupyter.snap);
                 if (!elem2line[id1]) elem2line[id1] = [];
                 if (!elem2line[id2]) elem2line[id2] = [];
                 elem2line[id1].push({line: line, start: true});
@@ -475,7 +493,7 @@ define(['jquery', './snap.svg'], function ($, snap) {
             if (currentStart == null) {
                 currentStart = id;
                 line = drupyter.snap.line(bbox.cx, bbox.cy, bbox.cx, bbox.cy).attr({
-                    stroke: '#00ADEF',
+                    stroke: '#000',
                 }).addClass("transient");
                 line.prependTo(drupyter.snap);
                 console.log("Clicked start: " + id);
@@ -487,7 +505,7 @@ define(['jquery', './snap.svg'], function ($, snap) {
                 console.log(element.id);
                 if (!elem2line[id]) elem2line[id] = [];
                 elem2line[id].push({line: line, start: false});
-                connectors.push({n1: currentStart, n2: element.id})
+                connectors.push({n1: currentStart, n2: element.id});
                 currentStart = null;
                 console.log(elem2line);
             }
@@ -599,9 +617,9 @@ define(['jquery', './snap.svg'], function ($, snap) {
                 centerY = y;
                 rect = drupyter.snap.rect(x, y, 0, 0);
                 rect.attr({
-                    fill: "#bada55",
+                    fill: "#fff",
                     stroke: "#000",
-                    strokeWidth: 5,
+                    strokeWidth: 1,
                 });
                 var remembered = rect.node;
                 drupyter.registerElement($(rect.node));
