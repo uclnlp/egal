@@ -147,7 +147,6 @@ define(['jquery', './snap.svg'], function ($, snap) {
             $('#color').val(Snap.color(snapElem.attr("stroke")).hex);
         });
 
-        ;
 
         this.activateElement = function (elem) {
             elem.click(function (e) {
@@ -157,11 +156,20 @@ define(['jquery', './snap.svg'], function ($, snap) {
                 console.log("MouseDown!");
                 if (self.currentContext.onMouseDownElement) self.currentContext.onMouseDownElement(e, this);
             });
+            elem.selectAll(".endPoint").forEach(function (endPoint) {
+                endPoint.drag(function (dx, dy, x, y, event) {
+                    if (self.currentContext.onDragEndPoint) self.currentContext.onDragEndPoint(dx, dy, x, y, event, this);
+                    // console.log("Dragging ...")
+                    // console.log(this)
+                });
+            });
+
         };
 
         this.registerElement = function (elem) {
             elem.attr({id: self.createNewId()}).addClass("drupElem");
             this.activateElement(elem);
+
         };
 
         $.get('/draw/' + self.drawName, function (data, status) {
@@ -171,21 +179,27 @@ define(['jquery', './snap.svg'], function ($, snap) {
             self.snap = Snap($(self.svg).get(0));
             self.filter = self.snap.filter(Snap.filter.shadow(0, 2, 3));
 
-            self.activateElement($(self.svg).find("*"));
-            self.currentId = $(".drupElem").length;
+            // self.activateElement($(self.svg).find("*"));
+            var elements = self.snap.selectAll(".drupElem");
+            console.log(elements);
+            elements.forEach(function (elem) {
+                self.activateElement(new Snap(elem));
+            });
+
+            self.currentId = elements.length;
             // $(self.svg).find("*").click(function (e) {
             //     if (self.currentContext.onClickElement) self.currentContext.onClickElement(e, this);
             // });
-            $(self.drawing).click(function (e) {
+            self.snap.click(function (e) {
                 if (self.currentContext.onClick) self.currentContext.onClick(e, this);
             });
-            $(self.drawing).mousemove(function (e) {
+            self.snap.mousemove(function (e) {
                 if (self.currentContext.onMouseMove) self.currentContext.onMouseMove(e, this);
             });
-            $(self.drawing).mousedown(function (e) {
+            self.snap.mousedown(function (e) {
                 if (self.currentContext.onMouseDown) self.currentContext.onMouseDown(e, this);
             });
-            $(self.drawing).mouseup(function (e) {
+            self.snap.mouseup(function (e) {
                 if (self.currentContext.onMouseUp) self.currentContext.onMouseUp(e, this);
             });
 
@@ -229,6 +243,7 @@ define(['jquery', './snap.svg'], function ($, snap) {
                 var cy = Number(circle.attr('cy'));
                 var radius = Number(circle.attr('r'));
                 var attr = {stroke: "#000", strokeWidth: 1, fill: '#fff'}; //fillOpacity: 0
+                circle.addClass("core");
                 var group = drupyter.snap.group(circle);
                 group.append(drupyter.snap.circle(cx, cy - radius, 5).attr(attr).addClass("endPoint up"));
                 group.append(drupyter.snap.circle(cx, cy + radius, 5).attr(attr).addClass("endPoint down"));
@@ -236,12 +251,12 @@ define(['jquery', './snap.svg'], function ($, snap) {
                 group.append(drupyter.snap.circle(cx + radius, cy, 5).attr(attr).addClass("endPoint right"));
                 // var group = drupyter.snap.group(circle, upEndPoint, downEndPoint, leftEndPoint, rightEndPoint);
                 console.log(group);
-                drupyter.registerElement($(group.node));
+                drupyter.registerElement(group);
                 drupyter.saveCurrentSVG();
                 circle = null;
 
             } else {
-                var offset = $(element).offset();
+                var offset = $(element.node).offset();
                 var x = e.pageX - offset.left;
                 var y = e.pageY - offset.top;
                 centerX = x;
@@ -262,7 +277,7 @@ define(['jquery', './snap.svg'], function ($, snap) {
 
         this.onMouseMove = function (e, element) {
             if (circle) {
-                var offset = $(element).offset();
+                var offset = $(element.node).offset();
                 var x = e.pageX - offset.left;
                 var y = e.pageY - offset.top;
                 circle.attr({
@@ -333,10 +348,15 @@ define(['jquery', './snap.svg'], function ($, snap) {
                 });
                 $.each(moveListeners, function (index, listener) {
                     listener(self.currentSelection);
+                    //todo: this should also call the move/change listeners on all sub-elements
                 });
 
             }
 
+        };
+
+        this.onDragEndPoint = function (dx, dy, x, y, event, endPoint) {
+            console.log("Dragging...")
         };
 
         this.onMouseDownElement = function (e, element) {
@@ -394,7 +414,7 @@ define(['jquery', './snap.svg'], function ($, snap) {
                 line = drupyter.snap.line(x, y, x, y).attr({
                     stroke: '#00ADEF'
                 });
-                drupyter.registerElement($(line.node));
+                drupyter.registerElement(line);
                 drupyter.selectionContext.selectElement(line.node);
             }
         };
@@ -407,7 +427,7 @@ define(['jquery', './snap.svg'], function ($, snap) {
         this.onMouseMove = function (e, element) {
             if (line) {
                 console.log("Changing ...");
-                var offset = $(element).offset();
+                var offset = $(element.node).offset();
                 var x = e.pageX - offset.left;
                 var y = e.pageY - offset.top;
                 line.attr({
@@ -525,12 +545,12 @@ define(['jquery', './snap.svg'], function ($, snap) {
                 $(field).remove();
                 $(text.node).remove();
             }
-            var offset = $(element).offset();
+            var offset = $(element.node).offset();
             var x = e.pageX - offset.left;
             var y = e.pageY - offset.top;
             var text = drupyter.snap.text(0, 0, "");
             var textGroup = drupyter.snap.group(text);
-            drupyter.registerElement($(textGroup.node));
+            drupyter.registerElement(textGroup);
             var svgns = "http://www.w3.org/2000/svg";
             var field = document.createElementNS(svgns, "foreignObject");
             field.setAttributeNS(null, "x", x);
@@ -610,7 +630,7 @@ define(['jquery', './snap.svg'], function ($, snap) {
                 rect = null;
                 drupyter.saveCurrentSVG();
             } else {
-                var offset = $(element).offset();
+                var offset = $(element.node).offset();
                 var x = e.pageX - offset.left;
                 var y = e.pageY - offset.top;
                 centerX = x;
@@ -633,7 +653,7 @@ define(['jquery', './snap.svg'], function ($, snap) {
         this.onMouseMove = function (e, element) {
             if (rect) {
                 console.log("Changing ...");
-                var offset = $(element).offset();
+                var offset = $(element.node).offset();
                 var x = e.pageX - offset.left;
                 var y = e.pageY - offset.top;
                 var top = Math.min(y, centerY);
