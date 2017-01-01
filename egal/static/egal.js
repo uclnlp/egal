@@ -211,7 +211,9 @@ define(['jquery', './snap.svg'], function ($, snap) {
             $(self.svg).attr("height", height);
             $(self.svg).attr("width", width);
             self.snap = Snap($(self.svg).get(0));
-            self.background = self.snap.rect(0, 0, width, height).attr({opacity: 0.0}).prependTo(self.snap);
+            self.background = self.snap.rect(0, 0, width, height)
+                .attr({opacity: 0.0})
+                .attr({id: "egal_background"}).prependTo(self.snap);
             self.filter = self.snap.filter(Snap.filter.shadow(0, 2, 3));
 
             // self.activateElement($(self.svg).find("*"));
@@ -256,6 +258,7 @@ define(['jquery', './snap.svg'], function ($, snap) {
             self.connectContext.saveConnectors();
             var cloned = $(self.drawing).clone();
             cloned.find(".transient").remove();
+            cloned.find("#egal_background").remove();
             $.ajax({
                 type: 'POST',
                 url: '/draw/' + drawName,
@@ -502,10 +505,13 @@ define(['jquery', './snap.svg'], function ($, snap) {
 
         this.moveToFront = function () {
             this.currentSelection.appendTo(this.currentSelection.paper);
+            // drupyter.background.after(this.currentSelection);
+
         };
 
         this.moveToBack = function () {
-            this.currentSelection.prependTo(this.currentSelection.paper);
+            drupyter.background.after(this.currentSelection);
+            // this.currentSelection.prependTo(this.currentSelection.paper);
         };
 
         // this.onMouseUp = function (e, element) {
@@ -839,6 +845,10 @@ define(['jquery', './snap.svg'], function ($, snap) {
                 group.append(drupyter.snap.circle(cx, cy + halfHeight, 5).attr(attr).addClass("endPoint down"));
                 group.append(drupyter.snap.circle(cx - halfWidth, cy, 5).attr(attr).addClass("endPoint left"));
                 group.append(drupyter.snap.circle(cx + halfWidth, cy, 5).attr(attr).addClass("endPoint right"));
+                group.append(drupyter.snap.circle(cx - halfWidth, cy - halfHeight, 5).attr(attr).addClass("endPoint left-up"));
+                group.append(drupyter.snap.circle(cx - halfWidth, cy + halfHeight, 5).attr(attr).addClass("endPoint left-down"));
+                group.append(drupyter.snap.circle(cx + halfWidth, cy - halfHeight, 5).attr(attr).addClass("endPoint right-up"));
+                group.append(drupyter.snap.circle(cx + halfWidth, cy + halfHeight, 5).attr(attr).addClass("endPoint right-down"));
                 // var group = drupyter.snap.group(circle, upEndPoint, downEndPoint, leftEndPoint, rightEndPoint);
                 console.log(group);
                 drupyter.registerElement(group);
