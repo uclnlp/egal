@@ -57,6 +57,7 @@ function trimPX(string) {
 
 define(['jquery', './snap.svg'], function ($, snap) {
 
+    // http://svg.dabbles.info/snaptut-freetransform-vb3.js
 //view-source:https://viereck.ch/latex-to-svg/
 //http://stackoverflow.com/questions/34924033/convert-latex-mathml-to-svg-or-image-with-mathjax-or-similar
     function Egal(container, drawName, options) {
@@ -157,17 +158,45 @@ define(['jquery', './snap.svg'], function ($, snap) {
                 if (self.currentContext.onMouseDownElement) self.currentContext.onMouseDownElement(e, this);
             });
             elem.selectAll(".endPoint").forEach(function (endPoint) {
-                endPoint.drag(function (dx, dy, x, y, event) {
-                    if (self.currentContext.onDragEndPoint) self.currentContext.onDragEndPoint(dx, dy, x, y, event, this);
-                    // console.log("Dragging ...")
-                    // console.log(this)
+                endPoint.drag(
+                    function (dx, dy, x, y, event) {
+                        if (self.currentContext.onDragEndPoint) self.currentContext.onDragEndPoint(dx, dy, x, y, event, this);
+                    },
+                    function (x, y, event) {
+                        if (self.currentContext.onDragEndPointStart) self.currentContext.onDragEndPointStart(x, y, event, this);
+                    },
+                    function (x, y, event) {
+                        if (self.currentContext.onDragEndPointEnd) self.currentContext.onDragEndPointEnd(x, y, event, this);
+                    }
+                );
+                endPoint.click(function (event) {
+                    if (self.currentContext.onClickEndPoint) self.currentContext.onClickEndPoint(event, this);
                 });
             });
+            elem.selectAll(".core").forEach(function (core) {
+                core.drag(
+                    function (dx, dy, x, y, event) {
+                        if (self.currentContext.onDragCore) self.currentContext.onDragCore(dx, dy, x, y, event, this);
+                    },
+                    function (x, y, event) {
+                        if (self.currentContext.onDragCoreStart) self.currentContext.onDragCoreStart(x, y, event, this);
+                    },
+                    function (x, y, event) {
+                        if (self.currentContext.onDragCoreEnd) self.currentContext.onDragCoreStart(x, y, event, this);
+                    }
+                );
+                core.click(function (e) {
+                    if (self.currentContext.onClickCore) self.currentContext.onClickCore(e, this);
+                });
+            })
 
         };
 
         this.registerElement = function (elem) {
             elem.attr({id: self.createNewId()}).addClass("drupElem");
+            elem.selectAll(".endPoint").forEach(function (endPoint, index) {
+                endPoint.attr({id: elem.attr("id") + "_endpoint_" + index})
+            });
             this.activateElement(elem);
 
         };
@@ -261,7 +290,7 @@ define(['jquery', './snap.svg'], function ($, snap) {
                 var y = e.pageY - offset.top;
                 centerX = x;
                 centerY = y;
-                circle = drupyter.snap.circle(x, y, 0);
+                circle = drupyter.snap.circle(x, y, 0).attr({"vector-effect": "non-scaling-stroke"});
 
                 circle.attr({
                     fill: "#fff",
@@ -328,52 +357,113 @@ define(['jquery', './snap.svg'], function ($, snap) {
         };
 
 
-        this.onMouseMove = function (e, element) {
-            console.log("Move");
-            // console.log(currentSelection);
-            if (moving) {
-                var x = e.pageX;
-                var y = e.pageY;
-                newMatrix = new Snap.Matrix(1, 0, 0, 1, x - startX, y - startY);
-                console.log(oldMatrix);
-                if (oldMatrix.e && oldMatrix.f) {
-                    console.log(oldMatrix.e);
-                    newMatrix = new Snap.Matrix(
-                        oldMatrix.a, oldMatrix.b, oldMatrix.c,
-                        oldMatrix.d, oldMatrix.e + x - startX, oldMatrix.f + y - startY);
-                    console.log(newMatrix)
-                }
-                new Snap(this.currentSelection).attr({
-                    transform: newMatrix
-                });
-                $.each(moveListeners, function (index, listener) {
-                    listener(self.currentSelection);
-                    //todo: this should also call the move/change listeners on all sub-elements
-                });
-
-            }
-
-        };
+        // this.onMouseMove = function (e, element) {
+        //     console.log("Move");
+        //     // console.log(currentSelection);
+        //     if (moving) {
+        //         var x = e.pageX;
+        //         var y = e.pageY;
+        //         newMatrix = new Snap.Matrix(1, 0, 0, 1, x - startX, y - startY);
+        //         console.log(oldMatrix);
+        //         if (oldMatrix.e && oldMatrix.f) {
+        //             console.log(oldMatrix.e);
+        //             newMatrix = new Snap.Matrix(
+        //                 oldMatrix.a, oldMatrix.b, oldMatrix.c,
+        //                 oldMatrix.d, oldMatrix.e + x - startX, oldMatrix.f + y - startY);
+        //             console.log(newMatrix)
+        //         }
+        //         new Snap(this.currentSelection).attr({
+        //             transform: newMatrix
+        //         });
+        //         $.each(moveListeners, function (index, listener) {
+        //             listener(self.currentSelection);
+        //             //todo: this should also call the move/change listeners on all sub-elements
+        //         });
+        //
+        //     }
+        //
+        // };
 
         this.onDragEndPoint = function (dx, dy, x, y, event, endPoint) {
-            console.log("Dragging...")
+            var parent = endPoint.parent();
+            var core = parent.select(".core");
+            var x_distance = endPoint.data("cx") - core.getBBox().cx;
+            var x_scale = (x_distance + dx) / x_distance; //need to be scaled down by current
+            var y_distance = endPoint.data("cy") - core.getBBox().cy;
+            var y_scale = (y_distance + dy) / y_distance;
+
+            if (endPoint.hasClass("right") || endPoint.hasClass("left")) {
+                y_scale = 1.0;
+            } else if (endPoint.hasClass("up") || endPoint.hasClass("down")) {
+                x_scale = 1.0
+            }
+            core.transform(core.data("orig_transform") + "S" + x_scale + "," + y_scale);
+            parent.selectAll(".endPoint").forEach(function (ep) {
+                var ep_dx = (x_scale - 1.0) * (ep.data("cx") - core.getBBox().cx);
+                var ep_dy = (y_scale - 1.0) * (ep.data("cy") - core.getBBox().cy);
+                ep.transform(ep.data("orig_transform") + "T" + ep_dx + "," + ep_dy);
+                $.each(moveListeners, function (index, listener) {
+                    listener(ep);
+                });
+
+            });
         };
 
-        this.onMouseDownElement = function (e, element) {
-            console.log("Clicked " + element);
-            startX = e.pageX;
-            startY = e.pageY;
-            this.selectElement(element);
-            var snapElement = new Snap(this.currentSelection);
-            snapElement.attr({filter: drupyter.filter});
-            oldMatrix = snapElement.attr("transform").localMatrix; //$(currentSelection).attr("transform");
-            moving = true;
-            // are we at the border of element?
-            console.log("BBOX");
-            console.log(snapElement);
-            console.log(snapElement.getBBox());
+        this.onDragEndPointStart = function (x, y, event, endPoint) {
+            var parent = endPoint.parent();
+            var core = parent.select(".core");
+            core.data("orig_transform", core.transform().globalMatrix.toTransformString());
+            parent.selectAll(".endPoint").forEach(function (ep) {
+                ep.data("orig_transform", ep.transform().globalMatrix.toTransformString());
+                ep.data("cx", ep.getBBox().cx);
+                ep.data("cy", ep.getBBox().cy);
+
+            })
+        };
+
+        this.onDragCore = function (dx, dy, x, y, event, core) {
+            var parent = core.parent();
+            core.transform(core.data("orig_transform") + "T" + dx + "," + dy);
+            parent.selectAll(".endPoint").forEach(function (ep) {
+                ep.transform(ep.data("orig_transform") + "T" + dx + "," + dy);
+                $.each(moveListeners, function (index, listener) {
+                    listener(ep);
+                });
+            });
+            $.each(moveListeners, function (index, listener) {
+                listener(core);
+            });
+
+            //             listener(self.currentSelection);
+            //             //todo: this should also call the move/change listeners on all sub-elements
+            //         });
 
         };
+        this.onDragCoreStart = function (x, y, event, core) {
+            var parent = core.parent();
+            core.data("orig_transform", core.transform().globalMatrix.toTransformString());
+            parent.selectAll(".endPoint").forEach(function (ep) {
+                ep.data("orig_transform", ep.transform().globalMatrix.toTransformString());
+            })
+
+        };
+
+
+        // this.onMouseDownElement = function (e, element) {
+        //     console.log("Clicked " + element);
+        //     startX = e.pageX;
+        //     startY = e.pageY;
+        //     this.selectElement(element);
+        //     var snapElement = new Snap(this.currentSelection);
+        //     snapElement.attr({filter: drupyter.filter});
+        //     oldMatrix = snapElement.attr("transform").localMatrix; //$(currentSelection).attr("transform");
+        //     moving = true;
+        //     // are we at the border of element?
+        //     console.log("BBOX");
+        //     console.log(snapElement);
+        //     console.log(snapElement.getBBox());
+        //
+        // };
 
         this.moveToFront = function () {
             var detached = $(this.currentSelection).detach();
@@ -385,12 +475,12 @@ define(['jquery', './snap.svg'], function ($, snap) {
             $(drupyter.svg).prepend(detached);
         };
 
-        this.onMouseUp = function (e, element) {
-            console.log("MouseUp");
-            moving = false;
-            new Snap(this.currentSelection).attr({filter: null});
-            // currentSelection = null;
-        };
+        // this.onMouseUp = function (e, element) {
+        //     console.log("MouseUp");
+        //     moving = false;
+        //     new Snap(this.currentSelection).attr({filter: null});
+        //     // currentSelection = null;
+        // };
 
         this.onClickElement = function (e, element) {
             // console.log("Clicked " + element);
@@ -404,25 +494,53 @@ define(['jquery', './snap.svg'], function ($, snap) {
         var line = null;
 
         this.onClick = function (e, element) {
-            if (line) {
-                line = null;
-                drupyter.saveCurrentSVG();
-            } else {
-                var offset = $(element).offset();
-                var x = e.pageX - offset.left;
-                var y = e.pageY - offset.top;
-                line = drupyter.snap.line(x, y, x, y).attr({
-                    stroke: '#00ADEF'
-                });
-                drupyter.registerElement(line);
-                drupyter.selectionContext.selectElement(line.node);
-            }
+            console.log("Paper clicked!");
+            console.log(element);
+            // if (line) {
+            //     line = null;
+            //     drupyter.saveCurrentSVG();
+            // } else {
+            //     var offset = $(element).offset();
+            //     var x = e.pageX - offset.left;
+            //     var y = e.pageY - offset.top;
+            //     line = drupyter.snap.line(x, y, x, y).attr({
+            //         stroke: '#00ADEF'
+            //     });
+            //     drupyter.registerElement(line);
+            //     drupyter.selectionContext.selectElement(line.node);
+            // }
         };
 
-        this.onClickElement = function (e, element) {
+        // this.onClickElement = function (e, element) {
+        //
+        //     // console.log("Clicked " + element);
+        // };
 
-            console.log("Clicked " + element);
-        };
+        drupyter.selectionContext.onMove(function (elem) {
+            var bbox = elem.getBBox();
+            // console.log("Moved " + elem);
+            // console.log(elem.paper.selectAll("[data-n1='" + elem.attr("id") + "'"));
+
+            elem.paper.selectAll("[data-n1='" + elem.attr("id") + "'").forEach(function (connector) {
+                connector.attr({x1: bbox.cx, y1: bbox.cy})
+            });
+            elem.paper.selectAll("[data-n2='" + elem.attr("id") + "'").forEach(function (connector) {
+                connector.attr({x2: bbox.cx, y2: bbox.cy})
+            });
+
+            // // line.attr({x2: bbox.cx, y2: bbox.cy})
+            // var elemLine = elem2line[elem.id];
+            // console.log(elemLine);
+            // if (elemLine) {
+            //     $.each(elemLine, function (index, elem) {
+            //         if (elem.start) {
+            //             elem.line.attr({x1: bbox.cx, y1: bbox.cy})
+            //         } else {
+            //             elem.line.attr({x2: bbox.cx, y2: bbox.cy})
+            //         }
+            //     })
+
+        });
 
         this.onMouseMove = function (e, element) {
             if (line) {
@@ -430,12 +548,39 @@ define(['jquery', './snap.svg'], function ($, snap) {
                 var offset = $(element.node).offset();
                 var x = e.pageX - offset.left;
                 var y = e.pageY - offset.top;
+                // var dx = x - Number(line.attr("x1"))
+                // var dy =
                 line.attr({
                     x2: x,
                     y2: y
                 })
+
             }
-        }
+        };
+
+        this.onClickEndPoint = function (event, endPoint) {
+            console.log("Starting line at Endpoint");
+            var bbox = endPoint.getBBox();
+            if (!line) {
+                line = drupyter.snap.line(bbox.cx, bbox.cy, bbox.cx, bbox.cy).attr({
+                    stroke: '#000',
+                }); //.addClass("transient");
+                line.attr("data-n1", endPoint.attr("id"));
+                line.prependTo(line.paper);
+                // line.remove();
+                // drupyter.snap.before(line);
+            } else {
+                line.attr({
+                    x2: bbox.cx,
+                    y2: bbox.cy
+                });
+                line.attr("data-n2", endPoint.attr("id"));
+
+                line = null
+            }
+        };
+
+
     }
 
     function ConnectContext(drupyter) {
@@ -466,6 +611,7 @@ define(['jquery', './snap.svg'], function ($, snap) {
             connectors = [];
             elem2line = {};
         };
+
 
         this.saveConnectors = function () {
             var currentConnectors = $(drupyter.drawing).children(".connector");
@@ -530,6 +676,7 @@ define(['jquery', './snap.svg'], function ($, snap) {
                 console.log(elem2line);
             }
         };
+
 
     }
 
