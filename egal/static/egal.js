@@ -206,9 +206,12 @@ define(['jquery', './snap.svg'], function ($, snap) {
 
         $.get('/draw/' + self.drawName, function (data, status) {
             $(self.drawing).html(data);
-            $(self.svg).attr("height", self.options.height || 600);
-            $(self.svg).attr("width", self.options.width || 400);
+            let height = self.options.height || 600;
+            let width = self.options.width || 400;
+            $(self.svg).attr("height", height);
+            $(self.svg).attr("width", width);
             self.snap = Snap($(self.svg).get(0));
+            self.background = self.snap.rect(0, 0, width, height).attr({opacity: 0.0}).prependTo(self.snap);
             self.filter = self.snap.filter(Snap.filter.shadow(0, 2, 3));
 
             // self.activateElement($(self.svg).find("*"));
@@ -225,6 +228,10 @@ define(['jquery', './snap.svg'], function ($, snap) {
             self.snap.click(function (e) {
                 if (self.currentContext.onClick) self.currentContext.onClick(e, this);
             });
+            self.background.click(function (e) {
+                if (self.currentContext.onClickBackground) self.currentContext.onClickBackground(e, this);
+            });
+
             self.snap.mousemove(function (e) {
                 if (self.currentContext.onMouseMove) self.currentContext.onMouseMove(e, this);
             });
@@ -333,6 +340,7 @@ define(['jquery', './snap.svg'], function ($, snap) {
         var listeners = [];
         var moveListeners = [];
         var dragging = false;
+        var dragged = false;
 
         this.onSelect = function (listener) {
             listeners.push(listener)
@@ -343,19 +351,43 @@ define(['jquery', './snap.svg'], function ($, snap) {
         };
 
         this.onClickElement = function (e, element) {
-            console.log("OnClick");
-            this.selectElement(element);
+            // console.log("OnClick");
+            // console.log(dragged);
+            // if (!dragged) this.selectElement(element);
+            // else {
+            //     dragged = false;
+            // }
             // if (currentSelection) {
             //     currentSelection = null
             // }
         };
 
+        this.onClickBackground = function (e, element) {
+            console.log("OnClick Paper");
+            // console.log(dragged);
+            // if (!dragged) this.selectElement(element);
+            // else {
+            //     dragged = false;
+            // }
+            if (this.currentSelection) {
+                this.currentSelection.select(".core").attr({filter: null});
+                currentSelection = null;
+
+            }
+        };
+
+
         this.selectElement = function (elem) {
             // console.log(this.listeners);
+            if (this.currentSelection) {
+                this.currentSelection.select(".core").attr({filter: null})
+            }
             this.currentSelection = elem;
+            elem.select(".core").attr({filter: drupyter.filter});
             $.each(listeners, function (index, value) {
                 value(elem);
             });
+
         };
 
         this.onMouseOver = function (e, element) {
@@ -410,7 +442,8 @@ define(['jquery', './snap.svg'], function ($, snap) {
         };
 
         this.onDragEndPointEnd = function (x, y, event, core) {
-            dragging = false
+            dragging = false;
+            dragged = true;
         };
 
         this.onDragCore = function (dx, dy, x, y, event, core) {
@@ -433,6 +466,8 @@ define(['jquery', './snap.svg'], function ($, snap) {
         };
         this.onDragCoreStart = function (x, y, event, core) {
             var parent = core.parent();
+            this.selectElement(parent);
+
             core.data("orig_transform", core.transform().globalMatrix.toTransformString());
             parent.selectAll(".endPoint").forEach(function (ep) {
                 ep.data("orig_transform", ep.transform().globalMatrix.toTransformString());
@@ -444,7 +479,8 @@ define(['jquery', './snap.svg'], function ($, snap) {
             // parent.selectAll(".endPoint").forEach(function (endPoint) {
             //     endPoint.attr({opacity: 0.0})
             // });
-            dragging = false
+            dragging = false;
+            dragged = true;
         };
 
 
