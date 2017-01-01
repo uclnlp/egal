@@ -17,11 +17,11 @@ navBar = '\
     <li id="makeCircle" class="nav-item">\
       <a class="nav-link" href="#">Circle</a>\
     </li>\
-    <li id="makeLine" class="nav-item">\
+    <li id="makeConnect" class="nav-item">\
       <a class="nav-link" href="#">Line</a>\
     </li>\
-    <li id="makeConnect" class="nav-item">\
-      <a class="nav-link" href="#">Connect</a>\
+    <li id="makeArrow" class="nav-item">\
+      <a class="nav-link" href="#">Arrow</a>\
     </li>\
     <li id="makeText" class="nav-item">\
       <a class="nav-link" href="#">Text</a>\
@@ -86,11 +86,12 @@ define(['jquery', './snap.svg'], function ($, snap) {
         this.connectContext = new ConnectContext(this);
         this.currentContext = this.selectionContext;
 
-        function linkContextButton(selector, context) {
+        function linkContextButton(selector, context, update) {
             $(selector + ' a').click(function () {
                 self.currentContext = context;
                 $('.contexts li').removeClass("active");
                 $(selector).addClass("active");
+                update && update();
             })
         }
 
@@ -102,8 +103,12 @@ define(['jquery', './snap.svg'], function ($, snap) {
 
         linkContextButton('#makeRect', this.makeRect);
         linkContextButton('#makeCircle', this.makeCircle);
-        // linkContextButton('#makeLine', this.lineContext);
-        linkContextButton('#makeConnect', this.connectContext);
+        linkContextButton('#makeArrow', this.connectContext, function () {
+            self.connectContext.arrow = true;
+        });
+        linkContextButton('#makeConnect', this.connectContext, function () {
+            self.connectContext.arrow = false;
+        });
         linkContextButton('#makeText', this.textContext);
         linkContextButton('#selectContext', this.selectionContext);
 
@@ -215,6 +220,9 @@ define(['jquery', './snap.svg'], function ($, snap) {
                 .attr({opacity: 0.0})
                 .attr({id: "egal_background"}).prependTo(self.snap);
             self.filter = self.snap.filter(Snap.filter.shadow(0, 2, 3));
+
+            self.arrow = self.snap.polygon([0, 0, 0, 6, 9, 3, 0, 0]).attr({fill: '#323232'});//.transform('r90');
+            self.marker = self.arrow.marker(0, 0, 10, 10, 9, 3);
 
             // self.activateElement($(self.svg).find("*"));
             var elements = self.snap.selectAll(".drupElem");
@@ -527,6 +535,7 @@ define(['jquery', './snap.svg'], function ($, snap) {
     function ConnectContext(drupyter) {
 
         var line = null;
+        this.arrow = false;
 
         this.onClick = function (e, element) {
             console.log("Paper clicked!");
@@ -615,7 +624,12 @@ define(['jquery', './snap.svg'], function ($, snap) {
                     stroke: '#000',
                 }); //.addClass("transient");
                 line.attr("data-n1", endPoint.attr("id"));
+                if (this.arrow){
+                    line.attr({"marker-end": drupyter.marker});
+                    console.log(drupyter.marker);
+                }
                 line.prependTo(line.paper);
+                console.log("Arrow: " + this.arrow);
                 // line.remove();
                 // drupyter.snap.before(line);
             } else {
