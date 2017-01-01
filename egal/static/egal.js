@@ -126,26 +126,26 @@ define(['jquery', './snap.svg'], function ($, snap) {
         });
 
         $("#stroke").change(function () {
-            var snapSelection = new Snap(self.selectionContext.currentSelection);
-            snapSelection.attr({strokeWidth: $('#stroke').val()})
+            self.selectionContext.currentSelection.select(".core").attr({strokeWidth: $('#stroke').val()})
         });
 
         $("#fill").change(function () {
-            var snapSelection = new Snap(self.selectionContext.currentSelection);
-            snapSelection.attr({fill: $('#fill').val()})
+            // var snapSelection = new Snap(self.selectionContext.currentSelection);
+            console.log("New Color: " + $('#fill').val());
+            self.selectionContext.currentSelection.select(".core").attr({fill: $('#fill').val()})
         });
 
         $("#color").change(function () {
-            var snapSelection = new Snap(self.selectionContext.currentSelection);
-            snapSelection.attr({stroke: $('#color').val()})
+            // var snapSelection = new Snap(self.selectionContext.currentSelection);
+            self.selectionContext.currentSelection.select(".core").attr({stroke: $('#color').val()})
         });
 
-        this.selectionContext.onSelect(function (elem) {
-            snapElem = new Snap(elem);
+        this.selectionContext.onSelect(function (snapElem) {
+            core = snapElem.select(".core");
             console.log(snapElem.attr("fill"));
-            $('#stroke').val(trimPX(snapElem.attr("strokeWidth")));
-            $('#fill').val(Snap.color(snapElem.attr("fill")).hex);
-            $('#color').val(Snap.color(snapElem.attr("stroke")).hex);
+            $('#stroke').val(trimPX(core.attr("strokeWidth")));
+            $('#fill').val(Snap.color(core.attr("fill")).hex);
+            $('#color').val(Snap.color(core.attr("stroke")).hex);
         });
 
 
@@ -330,13 +330,8 @@ define(['jquery', './snap.svg'], function ($, snap) {
     function SelectionContext(drupyter) {
 
         this.currentSelection = null;
-        var startX = 0;
-        var startY = 0;
-        var oldMatrix = null;
-        var moving = false;
         var listeners = [];
         var moveListeners = [];
-        var self = this;
         var dragging = false;
 
         this.onSelect = function (listener) {
@@ -347,15 +342,16 @@ define(['jquery', './snap.svg'], function ($, snap) {
             moveListeners.push(listener)
         };
 
-        this.onClick = function (e, element) {
-            // console.log("OnClick");
+        this.onClickElement = function (e, element) {
+            console.log("OnClick");
+            this.selectElement(element);
             // if (currentSelection) {
             //     currentSelection = null
             // }
         };
 
         this.selectElement = function (elem) {
-            console.log(this.listeners);
+            // console.log(this.listeners);
             this.currentSelection = elem;
             $.each(listeners, function (index, value) {
                 value(elem);
@@ -375,33 +371,6 @@ define(['jquery', './snap.svg'], function ($, snap) {
             });
         };
 
-
-        // this.onMouseMove = function (e, element) {
-        //     console.log("Move");
-        //     // console.log(currentSelection);
-        //     if (moving) {
-        //         var x = e.pageX;
-        //         var y = e.pageY;
-        //         newMatrix = new Snap.Matrix(1, 0, 0, 1, x - startX, y - startY);
-        //         console.log(oldMatrix);
-        //         if (oldMatrix.e && oldMatrix.f) {
-        //             console.log(oldMatrix.e);
-        //             newMatrix = new Snap.Matrix(
-        //                 oldMatrix.a, oldMatrix.b, oldMatrix.c,
-        //                 oldMatrix.d, oldMatrix.e + x - startX, oldMatrix.f + y - startY);
-        //             console.log(newMatrix)
-        //         }
-        //         new Snap(this.currentSelection).attr({
-        //             transform: newMatrix
-        //         });
-        //         $.each(moveListeners, function (index, listener) {
-        //             listener(self.currentSelection);
-        //             //todo: this should also call the move/change listeners on all sub-elements
-        //         });
-        //
-        //     }
-        //
-        // };
 
         this.onDragEndPoint = function (dx, dy, x, y, event, endPoint) {
             var parent = endPoint.parent();
@@ -496,13 +465,11 @@ define(['jquery', './snap.svg'], function ($, snap) {
         // };
 
         this.moveToFront = function () {
-            var detached = $(this.currentSelection).detach();
-            $(drupyter.svg).append(detached);
+            this.currentSelection.appendTo(this.currentSelection.paper);
         };
 
         this.moveToBack = function () {
-            var detached = $(this.currentSelection).detach();
-            $(drupyter.svg).prepend(detached);
+            this.currentSelection.prependTo(this.currentSelection.paper);
         };
 
         // this.onMouseUp = function (e, element) {
@@ -512,10 +479,6 @@ define(['jquery', './snap.svg'], function ($, snap) {
         //     // currentSelection = null;
         // };
 
-        this.onClickElement = function (e, element) {
-            // console.log("Clicked " + element);
-            // currentSelection = element;
-        };
     }
 
 
@@ -828,8 +791,23 @@ define(['jquery', './snap.svg'], function ($, snap) {
 
         this.onClick = function (e, element) {
             if (rect) {
-                rect = null;
+                var bbox = rect.getBBox();
+                var cx = bbox.cx;
+                var cy = bbox.cy;
+                var halfWidth = bbox.width / 2.0;
+                var halfHeight = bbox.height / 2.0;
+                var attr = {stroke: "#000", strokeWidth: 1, fill: '#fff', opacity: 0.0}; //fillOpacity: 0
+                rect.addClass("core");
+                var group = drupyter.snap.group(rect);
+                group.append(drupyter.snap.circle(cx, cy - halfHeight, 5).attr(attr).addClass("endPoint up"));
+                group.append(drupyter.snap.circle(cx, cy + halfHeight, 5).attr(attr).addClass("endPoint down"));
+                group.append(drupyter.snap.circle(cx - halfWidth, cy, 5).attr(attr).addClass("endPoint left"));
+                group.append(drupyter.snap.circle(cx + halfWidth, cy, 5).attr(attr).addClass("endPoint right"));
+                // var group = drupyter.snap.group(circle, upEndPoint, downEndPoint, leftEndPoint, rightEndPoint);
+                console.log(group);
+                drupyter.registerElement(group);
                 drupyter.saveCurrentSVG();
+                rect = null;
             } else {
                 var offset = $(element.node).offset();
                 var x = e.pageX - offset.left;
@@ -841,10 +819,8 @@ define(['jquery', './snap.svg'], function ($, snap) {
                     fill: "#fff",
                     stroke: "#000",
                     strokeWidth: 1,
+                    "vector-effect": "non-scaling-stroke"
                 });
-                var remembered = rect.node;
-                drupyter.registerElement($(rect.node));
-
                 // $(rect.node).click(function (e) {
                 //     if (drupyter.currentContext.onClickElement) drupyter.currentContext.onClickElement(e, remembered);
                 // });
