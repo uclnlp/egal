@@ -7,15 +7,15 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
     // http://svg.dabbles.info/snaptut-freetransform-vb3.js
 //view-source:https://viereck.ch/latex-to-svg/
 //http://stackoverflow.com/questions/34924033/convert-latex-mathml-to-svg-or-image-with-mathjax-or-similar
-    function Egal(container, drawName, options) {
+    function Egal(container, options) {
         this.options = options;
         this.container = container;
-        this.drawName = drawName;
         this.snap = null;
         this.drawing = container + ' div.drawing';
         this.svg = this.drawing + ' svg';
         this.menuSVG = container + ' div.menu svg';
         this.currentId = 0;
+        this.menuBarListeners = [];
         var self = this;
 
         this.createNewId = function () {
@@ -87,11 +87,20 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         //     $(self.container + " .egal-menu").toggle();
         // });
 
-        linkToggleButton(self.container + " .toggle-visible", function () {
+        this.onMenuBarToggle = function (l) {
+            self.menuBarListeners.push(l);
+        };
+
+        this.toggleMenuBar = function () {
             $(self.container + " .toggle-visible i").toggleClass("fa-toggle-on");
             $(self.container + " .toggle-visible i").toggleClass("fa-toggle-off");
             $(self.container + " .hideable").toggle();
-        });
+            $.each(self.menuBarListeners, function (index, l) {
+                l();
+            })
+        };
+
+        linkToggleButton(self.container + " .toggle-visible", this.toggleMenuBar);
 
         linkActionButton(self.container + " .clear", function () {
             $(self.svg).empty();
@@ -206,10 +215,10 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 endPoint.attr({id: elem.attr("id") + "_endpoint_" + index})
             });
             this.activateElement(elem);
-
         };
 
-        $.get('/draw/' + self.drawName, function (data, status) {
+
+        this.loadContent = function (data) {
             $(self.drawing).html(data);
             let height = self.options.height || $(self.svg).attr("height") || 400;
             let width = self.options.width || 400;
@@ -259,25 +268,39 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             self.connectContext.loadConnectors();
             console.log("Set SVG");
             // MathJax.Hub.Queue(["Typeset", MathJax.Hub, self.svg])
+        };
 
-        });
+        if (self.options.drawName) {
+            $.get('/draw/' + self.options.drawName, function (data, status) {
+                self.loadContent(data);
+            });
+        } else {
+            this.loadContent(this.options.content);
+        }
 
+        this.onSaveContent = function (saver) {
+            self.saveContent = saver;
+        };
+
+        this.saveContent = function (content) {
+            $.ajax({
+                type: 'POST',
+                url: '/draw/' + self.options.drawName,
+                data: content,
+                contentType: "text/xml",
+                dataType: "text",
+                success: function (data, status) {
+                    console.log(data);
+                }
+            })
+        };
 
         this.saveCurrentSVG = function () {
             self.connectContext.saveConnectors();
             var cloned = $(self.drawing).clone();
             cloned.find(".transient").remove();
             cloned.find("#egal_background").remove();
-            $.ajax({
-                type: 'POST',
-                url: '/draw/' + drawName,
-                data: cloned.html(),
-                contentType: "text/xml",
-                dataType: "text",
-                success: function (data, status) {
-                    console.log(data);
-                }
-            });
+            self.saveContent(cloned.html());
         };
 
     }

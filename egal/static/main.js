@@ -16,8 +16,17 @@ define(['./egal', 'base/js/namespace', 'jquery'], function (egal, Jupyter, $) {
             old_color = inputArea.css("background-color");
             inputArea.append($("<div id='" + divId + "'></div>"));
 
-            var canvas = new egal.Egal('#' + divId, cell.metadata.egal_id, {
-                width: '100%'
+            var canvas = new egal.Egal('#' + divId, {
+                width: '100%',
+                content: cell.get_text()
+            });
+            if (cell.metadata.hide_egal) canvas.toggleMenuBar();
+            canvas.onMenuBarToggle(function() {
+                console.log("Toggled!");
+                cell.metadata.hide_egal = !cell.metadata.hide_egal;
+            });
+            canvas.onSaveContent(function(content) {
+                cell.set_text(content);
             });
             inputArea.css("background-color", "white");
             inputArea.css("border-style", "none");
@@ -52,6 +61,7 @@ define(['./egal', 'base/js/namespace', 'jquery'], function (egal, Jupyter, $) {
     var create_egal = function () {
         // Find the selected cell
         var cell = Jupyter.notebook.insert_cell_below("raw");
+        cell.set_text("<svg height='250'></svg>");
         cell.metadata.is_egal = true;
         cell.metadata.egal_id = cell.cell_id;
         setup_egal_cell(cell);
