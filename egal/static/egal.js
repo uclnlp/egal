@@ -2,7 +2,7 @@ function trimPX(string) {
     return string.substring(0, string.length - 2);
 }
 
-define(['jquery', './snap.svg', 'text!menu.html'], function ($, snap, menuTxt) {
+define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTxt) {
 
     // http://svg.dabbles.info/snaptut-freetransform-vb3.js
 //view-source:https://viereck.ch/latex-to-svg/
@@ -33,15 +33,6 @@ define(['jquery', './snap.svg', 'text!menu.html'], function ($, snap, menuTxt) {
         this.connectContext = new ConnectContext(this);
         this.currentContext = this.selectionContext;
 
-        function linkContextButton(selector, context, update) {
-            $(selector + ' a').click(function () {
-                self.currentContext = context;
-                $('.contexts li').removeClass("active");
-                $(selector).addClass("active");
-                update && update();
-            })
-        }
-
         function linkContextButtonNew(selector, context, update) {
             $(selector).click(function () {
                 self.currentContext = context;
@@ -71,17 +62,6 @@ define(['jquery', './snap.svg', 'text!menu.html'], function ($, snap, menuTxt) {
         $(self.container).append("<div class='drawing'></div>");
         $(self.container).append("<div class='hidden' style=''></div>");
 
-        linkContextButton('#makeRect', this.makeRect);
-        linkContextButton('#makeCircle', this.makeCircle);
-        linkContextButton('#makeArrow', this.connectContext, function () {
-            self.connectContext.arrow = true;
-        });
-        linkContextButton('#makeConnect', this.connectContext, function () {
-            self.connectContext.arrow = false;
-        });
-        linkContextButton('#makeText', this.textContext);
-        linkContextButton('#selectContext', this.selectionContext);
-
         linkContextButtonNew(self.container + " .select", this.selectionContext);
 
         linkContextButtonNew(self.container + " .makeRect", this.makeRect);
@@ -93,6 +73,12 @@ define(['jquery', './snap.svg', 'text!menu.html'], function ($, snap, menuTxt) {
         });
         linkContextButtonNew(self.container + " .makeLine", this.connectContext, function () {
             self.connectContext.arrow = false;
+        });
+
+        $(self.container + " .toggle-visible").click(function() {
+            $(self.container + " .toggle-visible i").toggleClass("fa-toggle-on");
+            $(self.container + " .toggle-visible i").toggleClass("fa-toggle-off");
+            $(self.container + " .egal-menu").toggle();
         });
 
         linkActionButton(self.container + " .clear", function () {
