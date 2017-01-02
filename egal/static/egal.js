@@ -1,61 +1,8 @@
-navBar = '\
-<nav class="navbar navbar-light bg-faded"> \
-  <ul class="nav navbar-nav contexts"> \
-    <li class="nav-item dropdown">\
-      <a class="nav-link dropdown-toggle" href="#" id="supportedContentDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Image</a>\
-      <div class="dropdown-menu" aria-labelledby="supportedContentDropdown">\
-        <a id="clear" class="dropdown-item" href="#">Clear</a>\
-        <a id="save" class="dropdown-item" href="#">Save</a>\
-      </div>\
-    </li>\
-    <li id="selectContext" class="nav-item active"> \
-      <a class="nav-link" href="#">Select<span class="sr-only">(current)</span></a>\
-    </li>\
-    <li id="makeRect" class="nav-item">\
-      <a class="nav-link" href="#">Rect</a>\
-    </li>\
-    <li id="makeCircle" class="nav-item">\
-      <a class="nav-link" href="#">Circle</a>\
-    </li>\
-    <li id="makeConnect" class="nav-item">\
-      <a class="nav-link" href="#">Line</a>\
-    </li>\
-    <li id="makeArrow" class="nav-item">\
-      <a class="nav-link" href="#">Arrow</a>\
-    </li>\
-    <li id="makeText" class="nav-item">\
-      <a class="nav-link" href="#">Text</a>\
-    </li>\
-    <li class="nav-item dropdown">\
-      <a class="nav-link dropdown-toggle" href="#" id="supportedContentDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Order</a>\
-      <div class="dropdown-menu" aria-labelledby="supportedContentDropdown">\
-        <a id="toFront" class="dropdown-item" href="#">To Front</a>\
-        <a id="toBack" class="dropdown-item" href="#">To Back</a>\
-      </div>\
-    </li>\
-  </ul>\
-  <form class="form-inline float-xs-right">\
-    <div class="input-group">\
-      <span class="input-group-addon" id="basic-addon1">Stroke</span>\
-      <input id="stroke" style="width:80px" class="form-control" type="number" placeholder="12">\
-    </div>\
-    <div class="input-group">\
-      <span class="input-group-addon" id="basic-addon1">Color</span>\
-      <input id="color" style="width:100px" class="form-control" type="text" placeholder="red">\
-    </div>\
-    <div class="input-group">\
-      <span class="input-group-addon" id="basic-addon1">Fill</span>\
-      <input id="fill" style="width:100px" class="form-control" type="text" placeholder="red">\
-    </div>\
-  </form>\
-</nav>';
-
-
 function trimPX(string) {
     return string.substring(0, string.length - 2);
 }
 
-define(['jquery', './snap.svg'], function ($, snap) {
+define(['jquery', './snap.svg', 'text!menu.html'], function ($, snap, menuTxt) {
 
     // http://svg.dabbles.info/snaptut-freetransform-vb3.js
 //view-source:https://viereck.ch/latex-to-svg/
@@ -95,9 +42,32 @@ define(['jquery', './snap.svg'], function ($, snap) {
             })
         }
 
+        function linkContextButtonNew(selector, context, update) {
+            $(selector).click(function () {
+                self.currentContext = context;
+                console.log("Button Clicked!");
+                $(self.container + " .egal-menu li").removeClass("active");
+                $(selector).addClass("active");
+                update && update();
+
+            })
+        }
+
+        function linkActionButton(selector, action) {
+            $(selector).click(function () {
+                action();
+            });
+            $(selector).mousedown(function () {
+                $(selector).addClass("active");
+            });
+            $(selector).mouseup(function () {
+                $(selector).removeClass("active");
+            });
+        }
+
 
         // $(self.container).append(menuDiv);
-        $(self.container).append($(navBar));
+        $(self.container).append($(menuTxt));
         $(self.container).append("<div class='drawing'></div>");
         $(self.container).append("<div class='hidden' style=''></div>");
 
@@ -111,6 +81,30 @@ define(['jquery', './snap.svg'], function ($, snap) {
         });
         linkContextButton('#makeText', this.textContext);
         linkContextButton('#selectContext', this.selectionContext);
+
+        linkContextButtonNew(self.container + " .select", this.selectionContext);
+
+        linkContextButtonNew(self.container + " .makeRect", this.makeRect);
+        linkContextButtonNew(self.container + " .makeCircle", this.makeCircle);
+        linkContextButtonNew(self.container + " .makeText", this.textContext);
+        linkContextButtonNew(self.container + " .makeArrow", this.connectContext, function () {
+            self.connectContext.arrow = true;
+            console.log("Blah");
+        });
+        linkContextButtonNew(self.container + " .makeLine", this.connectContext, function () {
+            self.connectContext.arrow = false;
+        });
+
+        linkActionButton(self.container + " .clear", function () {
+            $(self.svg).empty();
+            $(self.drawing + ">div").remove();
+            self.connectContext.clear();
+            self.currentId = 0;
+        });
+        linkActionButton(self.container + " .save", function () {
+            self.saveCurrentSVG();
+        });
+
 
         $("#toFront").click(function () {
             self.selectionContext.moveToFront();
@@ -624,7 +618,7 @@ define(['jquery', './snap.svg'], function ($, snap) {
                     stroke: '#000',
                 }); //.addClass("transient");
                 line.attr("data-n1", endPoint.attr("id"));
-                if (this.arrow){
+                if (this.arrow) {
                     line.attr({"marker-end": drupyter.marker});
                     console.log(drupyter.marker);
                 }
@@ -768,7 +762,7 @@ define(['jquery', './snap.svg'], function ($, snap) {
             var offset = $(element.node).offset();
             var x = e.pageX - offset.left;
             var y = e.pageY - offset.top;
-            var text = drupyter.snap.text(0, 0, "");
+            var text = drupyter.snap.text(x, y, "").addClass("core");
             var textGroup = drupyter.snap.group(text);
             drupyter.registerElement(textGroup);
             var svgns = "http://www.w3.org/2000/svg";
@@ -790,9 +784,11 @@ define(['jquery', './snap.svg'], function ($, snap) {
             $(field).keypress(function (e) {
                 if (e.keyCode == 13) {
                     console.log($(textInput).val());
-                    textGroup.attr({
-                        transform: new Snap.Matrix(1, 0, 0, 1, x, y + $(textInput).height())
-                    });
+                    // text.attr({
+                    //     transform: new Snap.Matrix(1, 0, 0, 1, x, y + $(textInput).height())
+                    // });
+                    text.attr("y", y + $(textInput).height());
+
 
                     text.attr({
                         text: $(textInput).val()
@@ -805,6 +801,7 @@ define(['jquery', './snap.svg'], function ($, snap) {
                     // hidden.text($(textInput).val());
                     // console.log(hidden);
                     $(field).remove();
+                    drupyter.registerElement(textGroup);
                     // MathJax.Hub.Queue(["Typeset", MathJax.Hub, hidden.get(0)]);
                     // MathJax.Hub.Queue(function () {
                     //     console.log("Done!");
