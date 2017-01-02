@@ -103,6 +103,11 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             self.saveCurrentSVG();
         });
 
+        // $(self.container + " .style").click(function () {
+        //     console.log($(self.container + " .style-modal"));
+        //     $(self.container + " .style-modal").modal('show');
+        // });
+
 
         $("#toFront").click(function () {
             self.selectionContext.moveToFront();
@@ -122,27 +127,26 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             self.saveCurrentSVG();
         });
 
-        $("#stroke").change(function () {
-            self.selectionContext.currentSelection.select(".core").attr({strokeWidth: $('#stroke').val()})
-        });
-
-        $("#fill").change(function () {
+;
+        $(self.container + " .wi").change(function () {
             // var snapSelection = new Snap(self.selectionContext.currentSelection);
-            console.log("New Color: " + $('#fill').val());
-            self.selectionContext.currentSelection.select(".core").attr({fill: $('#fill').val()})
+            self.selectionContext.currentSelection.select(".core").attr({strokeWidth: $(self.container + " .wi").val()})
         });
-
-        $("#color").change(function () {
+        $(self.container + " .fg").change(function () {
             // var snapSelection = new Snap(self.selectionContext.currentSelection);
-            self.selectionContext.currentSelection.select(".core").attr({stroke: $('#color').val()})
+            self.selectionContext.currentSelection.select(".core").attr({stroke: $(self.container + " .fg").val()})
+        });
+        $(self.container + " .bg").change(function () {
+            // var snapSelection = new Snap(self.selectionContext.currentSelection);
+            self.selectionContext.currentSelection.select(".core").attr({fill: $(self.container + " .bg").val()})
         });
 
         this.selectionContext.onSelect(function (snapElem) {
             core = snapElem.select(".core");
             console.log(snapElem.attr("fill"));
-            $('#stroke').val(trimPX(core.attr("strokeWidth")));
-            $('#fill').val(Snap.color(core.attr("fill")).hex);
-            $('#color').val(Snap.color(core.attr("stroke")).hex);
+            $(self.container + " .wi").val(trimPX(core.attr("strokeWidth")));
+            $(self.container + " .bg").val(Snap.color(core.attr("fill")).hex);
+            $(self.container + " .fg").val(Snap.color(core.attr("stroke")).hex);
         });
 
 

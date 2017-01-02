@@ -15,6 +15,7 @@
         font-size: 20px !important;
 
     }
+
     .egal-visible-menu li i {
         font-style: normal !important;
         font-size: 20px !important;
@@ -78,6 +79,9 @@
         <li class="select">
             <i class="fa fa-hand-o-right fa-1x"></i>
         </li>
+        <!--<li class="style" data-toggle="modal" data-target="#myModal">-->
+            <!--<i class="fa fa-paint-brush fa-1x"></i>-->
+        <!--</li>-->
         <li class="makeRect">
             <svg viewBox="0 0 20 20" width="13" height="13">
                 <rect x="1" y="1" width="18" height="18" style="fill:none; stroke:black; stroke-width:2"></rect>
@@ -106,6 +110,33 @@
                 </text>
             </svg>
         </li>
+        <li>
+            fg <input class="fg" type="text" size="6"/>
+        </li>
+        <li>
+            bg <input class="bg" type="text" size="6"/>
+        </li>
+        <li>
+            wi <input class="wi" type="text" size="2"/>
+        </li>
+
     </ul>
 </div>
-
+<div class="modal fade style-modal" tabindex="-1" id="myModal" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Modal title</h4>
+            </div>
+            <div class="modal-body">
+                <p>One fine body&hellip;</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

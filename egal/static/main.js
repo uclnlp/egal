@@ -7,31 +7,25 @@ define(['./egal', 'base/js/namespace', 'jquery'], function (egal, Jupyter, $) {
 
     var old_color = null;
 
-    var toggle_selected_input = function () {
-        // Find the selected cell
-        var cell = Jupyter.notebook.get_selected_cell();
-        // Toggle visibility of the input div
-        cell.element.find("div.input").toggle('slow');
-        cell.metadata.is_egal = !cell.metadata.is_egal;
-    };
-
     var setup_egal_cell = function (cell) {
         cell.element.find("div div.input_area > *").toggle();
         var inputArea = cell.element.find("div div.input_area");
         var cellToolBar = cell.element.find(".celltoolbar");
+        var divId = 'egal_' + cell.metadata.egal_id;
         if (cell.metadata.is_egal) {
             old_color = inputArea.css("background-color");
-            inputArea.append($("<div id='pups'></div>"));
-            var canvas = new egal.Egal('#pups', 'blah', {
+            inputArea.append($("<div id='" + divId + "'></div>"));
+
+            var canvas = new egal.Egal('#' + divId, cell.metadata.egal_id, {
                 width: '100%',
                 height: '400'
             });
             inputArea.css("background-color", "white");
             inputArea.css("border-style", "none");
             cellToolBar.css("border-bottom", "thin solid #CFCFCF");
-
+            // cell.cell_type = "raw";
         } else {
-            cell.element.find("div div.input_area #pups").remove();
+            cell.element.find("div div.input_area #" + divId).remove();
             inputArea.css("background-color", old_color);
             inputArea.css("border-style", "solid");
             cellToolBar.css("border-bottom", "none");
@@ -42,10 +36,22 @@ define(['./egal', 'base/js/namespace', 'jquery'], function (egal, Jupyter, $) {
         // Find the selected cell
         var cell = Jupyter.notebook.get_selected_cell();
         cell.metadata.is_egal = !cell.metadata.is_egal;
+        if (cell.metadata.is_egal && !cell.metadata.egal_id) {
+            cell.metadata.egal_id = cell.cell_id;
+        }
         setup_egal_cell(cell);
     };
 
-    var update_input_visibility = function () {
+    var create_egal = function () {
+        // Find the selected cell
+        var cell = Jupyter.notebook.insert_cell_below("raw");
+        cell.metadata.is_egal = true;
+        cell.metadata.egal_id = cell.cell_id;
+        setup_egal_cell(cell);
+    };
+
+
+    var update_egal_cells = function () {
         Jupyter.notebook.get_cells().forEach(function (cell) {
             if (cell.metadata.is_egal) {
                 setup_egal_cell(cell);
@@ -58,9 +64,10 @@ define(['./egal', 'base/js/namespace', 'jquery'], function (egal, Jupyter, $) {
         Jupyter.toolbar.add_buttons_group([{
             id: 'btn-hide-input',
             label: 'Toggle selected cell input display',
-            icon: 'fa-chevron-up',
+            icon: 'fa-paint-brush',
             callback: function () {
-                toggle_egal();
+                create_egal();
+                // toggle_egal();
                 setTimeout(function () {
                     $('#btn-hide-input').blur();
                 }, 500);
@@ -70,12 +77,12 @@ define(['./egal', 'base/js/namespace', 'jquery'], function (egal, Jupyter, $) {
         if (typeof Jupyter.notebook === 'undefined') {
             // notebook not loaded yet. add callback for when it's loaded.
             require(['base/js/events'], function (events) {
-                events.on("notebook_loaded.Notebook", update_input_visibility)
+                events.on("notebook_loaded.Notebook", update_egal_cells)
             });
         }
         else {
             // notebook already loaded. Update directly
-            update_input_visibility();
+            update_egal_cells();
         }
     };
     return {
