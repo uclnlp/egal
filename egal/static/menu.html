@@ -1,10 +1,9 @@
 <style>
     .egal-menu li {
-        display: inline;
+        display: inline-block;
         list-style-type: none;
         padding: 2px;
         opacity: 0.3;
-        cursor: pointer;
         /*all: initial;*/
 
         /*cursor: hand;*/
@@ -16,39 +15,15 @@
 
     }
 
-    .egal-visible-menu li i {
-        font-style: normal !important;
-        font-size: 20px !important;
-
-    }
-
     .egal-menu li:hover {
         opacity: 0.8;
-    }
-
-    .egal-visible-menu li {
-        display: inline;
-        list-style-type: none;
-        padding: 2px;
-        opacity: .3;
-        cursor: pointer;
-
-    }
-
-    .egal-visible-menu li:hover {
-        opacity: 0.8;
-    }
-
-    .egal-visible-menu {
-        display: inline;
-        padding: 3px;
-        margin: 0px !important;
     }
 
     .egal-menu {
         display: inline;
         padding: 3px;
-        margin: 0px !important;
+        cursor: pointer;
+
     }
 
     .egal-menu-bar li.active {
@@ -63,64 +38,90 @@
         /*font-size:100%;*/
     }
 
+    .icons {
+        display: inline-block;
+        position: relative;
+        padding-bottom: 5px;
+    }
+
+    .style-menu {
+        display: inline-block;
+        position: relative;
+        /*margin-top: 2px;*/
+    }
+
+    .style-menu {
+        font-size: 13px;
+        vertical-align: top;
+    }
+
 
 </style>
 <div class="egal-menu-bar">
-    <ul class="egal-visible-menu">
-        <li class="toggle-visible"><i class="fa fa-toggle-on fa-1x"></i></li>
-    </ul>
-    <ul class="egal-menu">
-        <li class="save">
-            <i class="fa fa-save fa-1x"></i>
-        </li>
-        <li class="clear">
-            <i class="fa fa-trash fa-1x"></i>
-        </li>
-        <li class="select">
-            <i class="fa fa-hand-o-right fa-1x"></i>
-        </li>
-        <!--<li class="style" data-toggle="modal" data-target="#myModal">-->
+    <div class="icons">
+        <ul class="egal-menu">
+            <li class="toggle-visible"><i class="fa fa-toggle-on fa-1x"></i></li>
+        </ul>
+        <ul class="egal-menu hideable">
+            <li class="save">
+                <i class="fa fa-save fa-1x"></i>
+            </li>
+            <li class="clear">
+                <i class="fa fa-trash fa-1x"></i>
+            </li>
+            <li class="select">
+                <i class="fa fa-hand-o-right fa-1x"></i>
+            </li>
+            <!--<li class="style" data-toggle="modal" data-target="#myModal">-->
             <!--<i class="fa fa-paint-brush fa-1x"></i>-->
-        <!--</li>-->
-        <li class="makeRect">
-            <svg viewBox="0 0 20 20" width="13" height="13">
-                <rect x="1" y="1" width="18" height="18" style="fill:none; stroke:black; stroke-width:2"></rect>
-            </svg>
-        </li>
-        <li class="makeCircle">
-            <svg viewBox="0 0 20 20" width="13" height="13">
-                <circle cx="10" cy="10" r="9" style="fill:none; stroke:black; stroke-width:2"></circle>
-            </svg>
-        </li>
-        <li class="makeLine">
-            <svg viewBox="0 0 20 20" width="13" height="13">
-                <line x1="1" y1="5" x2="19" y2="15" style="fill:none; stroke:black; stroke-width:2"></line>
-            </svg>
-        </li>
-        <li class="makeArrow">
-            <svg viewBox="0 0 20 20" width="13" height="13">
-                <line x1="1" y1="10" x2="19" y2="10" style="fill:none; stroke:black; stroke-width:2"></line>
-                <path d="M 16 7 L 19 10 L 16 13 z" stroke="black" stroke-width="2"></path>
-            </svg>
-        </li>
-        <li class="makeText">
-            <svg viewBox="0 0 20 20" width="13" height="13">
-                <text x="2" y="18" font-family="Times" font-size="22">
-                    A
-                </text>
-            </svg>
-        </li>
-        <li>
-            fg <input class="fg" type="text" size="6"/>
-        </li>
-        <li>
-            bg <input class="bg" type="text" size="6"/>
-        </li>
-        <li>
-            wi <input class="wi" type="text" size="2"/>
-        </li>
+            <!--</li>-->
+            <li class="makeRect">
+                <svg viewBox="0 0 20 20" width="13" height="13">
+                    <rect x="1" y="1" width="18" height="18" style="fill:none; stroke:black; stroke-width:2"></rect>
+                </svg>
+            </li>
+            <li class="makeCircle">
+                <svg viewBox="0 0 20 20" width="13" height="13">
+                    <circle cx="10" cy="10" r="9" style="fill:none; stroke:black; stroke-width:2"></circle>
+                </svg>
+            </li>
+            <li class="makeLine">
+                <svg viewBox="0 0 20 20" width="13" height="13">
+                    <line x1="1" y1="5" x2="19" y2="15" style="fill:none; stroke:black; stroke-width:2"></line>
+                </svg>
+            </li>
+            <li class="makeArrow">
+                <svg viewBox="0 0 20 20" width="13" height="13">
+                    <line x1="1" y1="10" x2="19" y2="10" style="fill:none; stroke:black; stroke-width:2"></line>
+                    <path d="M 16 7 L 19 10 L 16 13 z" stroke="black" stroke-width="2"></path>
+                </svg>
+            </li>
+            <li class="makeText">
+                <svg viewBox="0 0 20 20" width="13" height="13">
+                    <text x="2" y="18" font-family="Times" font-size="22">
+                        A
+                    </text>
+                </svg>
+            </li>
+        </ul>
+    </div>
+    <div class="style-menu">
+        <ul class="egal-menu hideable">
+            <li>
+                fg <input class="fg" type="text" size="6"/>
+            </li>
+            <li>
+                bg <input class="bg" type="text" size="6"/>
+            </li>
+            <li>
+                wi <input class="wi" type="text" size="2"/>
+            </li>
+            <li>
+                h <input class="height" type="text" size="4"/>
+            </li>
 
-    </ul>
+        </ul>
+    </div>
 </div>
 <div class="modal fade style-modal" tabindex="-1" id="myModal" role="dialog">
     <div class="modal-dialog" role="document">

@@ -90,7 +90,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         linkToggleButton(self.container + " .toggle-visible", function () {
             $(self.container + " .toggle-visible i").toggleClass("fa-toggle-on");
             $(self.container + " .toggle-visible i").toggleClass("fa-toggle-off");
-            $(self.container + " .egal-menu").toggle();
+            $(self.container + " .hideable").toggle();
         });
 
         linkActionButton(self.container + " .clear", function () {
@@ -127,7 +127,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             self.saveCurrentSVG();
         });
 
-;
+        ;
         $(self.container + " .wi").change(function () {
             // var snapSelection = new Snap(self.selectionContext.currentSelection);
             self.selectionContext.currentSelection.select(".core").attr({strokeWidth: $(self.container + " .wi").val()})
@@ -140,6 +140,10 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             // var snapSelection = new Snap(self.selectionContext.currentSelection);
             self.selectionContext.currentSelection.select(".core").attr({fill: $(self.container + " .bg").val()})
         });
+        $(self.container + " .height").change(function () {
+            self.snap.attr({height: $(self.container + " .height").val()})
+        });
+
 
         this.selectionContext.onSelect(function (snapElem) {
             core = snapElem.select(".core");
@@ -207,11 +211,12 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         $.get('/draw/' + self.drawName, function (data, status) {
             $(self.drawing).html(data);
-            let height = self.options.height || 600;
+            let height = self.options.height || $(self.svg).attr("height") || 400;
             let width = self.options.width || 400;
             $(self.svg).attr("height", height);
             $(self.svg).attr("width", width);
             self.snap = Snap($(self.svg).get(0));
+            $(self.container + " .height").val(self.snap.attr("height"));
             self.background = self.snap.rect(0, 0, width, height)
                 .attr({opacity: 0.0})
                 .attr({id: "egal_background"}).prependTo(self.snap);

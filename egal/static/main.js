@@ -17,12 +17,19 @@ define(['./egal', 'base/js/namespace', 'jquery'], function (egal, Jupyter, $) {
             inputArea.append($("<div id='" + divId + "'></div>"));
 
             var canvas = new egal.Egal('#' + divId, cell.metadata.egal_id, {
-                width: '100%',
-                height: '400'
+                width: '100%'
             });
             inputArea.css("background-color", "white");
             inputArea.css("border-style", "none");
             cellToolBar.css("border-bottom", "thin solid #CFCFCF");
+            cell.element.click(function() {
+                console.log("Clicked on Egal!");
+                cell.keyboard_manager.disable();
+
+                cell.edit_mode();
+                console.log(cell.mode);
+                // cell.element.get(0).focus();
+            });
             // cell.cell_type = "raw";
         } else {
             cell.element.find("div div.input_area #" + divId).remove();
@@ -56,7 +63,7 @@ define(['./egal', 'base/js/namespace', 'jquery'], function (egal, Jupyter, $) {
             if (cell.metadata.is_egal) {
                 setup_egal_cell(cell);
             }
-        })
+        });
     };
 
     var load_ipython_extension = function () {
@@ -77,15 +84,14 @@ define(['./egal', 'base/js/namespace', 'jquery'], function (egal, Jupyter, $) {
         if (typeof Jupyter.notebook === 'undefined') {
             // notebook not loaded yet. add callback for when it's loaded.
             require(['base/js/events'], function (events) {
-                events.on("notebook_loaded.Notebook", update_egal_cells)
+                events.on("notebook_loaded.Notebook", update_egal_cells);
             });
-        }
-        else {
+        } else {
             // notebook already loaded. Update directly
             update_egal_cells();
         }
     };
     return {
         load_ipython_extension: load_ipython_extension
-    }
+    };
 });
