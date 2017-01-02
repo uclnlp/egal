@@ -56,6 +56,12 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             });
         }
 
+        function linkToggleButton(selector, action) {
+            $(selector).click(function () {
+                action();
+            });
+        }
+
 
         // $(self.container).append(menuDiv);
         $(self.container).append($(menuTxt));
@@ -75,7 +81,13 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             self.connectContext.arrow = false;
         });
 
-        $(self.container + " .toggle-visible").click(function() {
+        // $(self.container + " .toggle-visible").click(function() {
+        //     $(self.container + " .toggle-visible i").toggleClass("fa-toggle-on");
+        //     $(self.container + " .toggle-visible i").toggleClass("fa-toggle-off");
+        //     $(self.container + " .egal-menu").toggle();
+        // });
+
+        linkToggleButton(self.container + " .toggle-visible", function () {
             $(self.container + " .toggle-visible i").toggleClass("fa-toggle-on");
             $(self.container + " .toggle-visible i").toggleClass("fa-toggle-off");
             $(self.container + " .egal-menu").toggle();

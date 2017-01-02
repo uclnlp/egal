@@ -4,13 +4,25 @@
         list-style-type: none;
         padding: 2px;
         opacity: 0.3;
+        cursor: pointer;
+        /*cursor: hand;*/
+    }
+
+    .egal-menu li:hover {
+        opacity: 0.8;
     }
 
     .egal-visible-menu li {
         display: inline;
         list-style-type: none;
         padding: 2px;
-        opacity: 1.0;
+        opacity: .3;
+        cursor: pointer;
+
+    }
+
+    .egal-visible-menu li:hover {
+        opacity: 0.8;
     }
 
     .egal-visible-menu {
@@ -25,53 +37,56 @@
         margin: 0px !important;
     }
 
-    .egal-menu li.active {
+    .egal-menu-bar li.active {
         opacity: 1.0;
     }
 
+
 </style>
-<ul class="egal-visible-menu">
-    <li class="toggle-visible"><i class="fa fa-toggle-on fa-1x"></i></li>
-</ul>
-<ul class="egal-menu">
-    <li class="save">
-        <i class="fa fa-save fa-1x"></i>
-    </li>
-    <li class="clear">
-        <i class="fa fa-trash fa-1x"></i>
-    </li>
-    <li class="select">
-        <i class="fa fa-hand-o-right fa-1x"></i>
-    </li>
-    <li class="makeRect">
-        <svg viewBox="0 0 20 20" width="13" height="13">
-            <rect x="1" y="1" width="18" height="18" style="fill:none; stroke:black; stroke-width:2"></rect>
-        </svg>
-    </li>
-    <li class="makeCircle">
-        <svg viewBox="0 0 20 20" width="13" height="13">
-            <circle cx="10" cy="10" r="9" style="fill:none; stroke:black; stroke-width:2"></circle>
-        </svg>
-    </li>
-    <li class="makeLine">
-        <svg viewBox="0 0 20 20" width="13" height="13">
-            <line x1="1" y1="5" x2="19" y2="15" style="fill:none; stroke:black; stroke-width:2"></line>
-        </svg>
-    </li>
-    <li class="makeArrow">
-        <svg viewBox="0 0 20 20" width="13" height="13">
-            <line x1="1" y1="10" x2="19" y2="10" style="fill:none; stroke:black; stroke-width:2"></line>
-            <path d="M 16 7 L 19 10 L 16 13 z" stroke="black" stroke-width="2"></path>
-        </svg>
-    </li>
-    <li class="makeText">
-        <svg viewBox="0 0 20 20" width="13" height="13">
-            <text x="2" y="18" font-family="Times" font-size="22">
-                A
-            </text>
-        </svg>
-    </li>
-</ul>
+<div class="egal-menu-bar">
+    <ul class="egal-visible-menu">
+        <li class="toggle-visible"><i class="fa fa-toggle-on fa-1x"></i></li>
+    </ul>
+    <ul class="egal-menu">
+        <li class="save">
+            <i class="fa fa-save fa-1x"></i>
+        </li>
+        <li class="clear">
+            <i class="fa fa-trash fa-1x"></i>
+        </li>
+        <li class="select">
+            <i class="fa fa-hand-o-right fa-1x"></i>
+        </li>
+        <li class="makeRect">
+            <svg viewBox="0 0 20 20" width="13" height="13">
+                <rect x="1" y="1" width="18" height="18" style="fill:none; stroke:black; stroke-width:2"></rect>
+            </svg>
+        </li>
+        <li class="makeCircle">
+            <svg viewBox="0 0 20 20" width="13" height="13">
+                <circle cx="10" cy="10" r="9" style="fill:none; stroke:black; stroke-width:2"></circle>
+            </svg>
+        </li>
+        <li class="makeLine">
+            <svg viewBox="0 0 20 20" width="13" height="13">
+                <line x1="1" y1="5" x2="19" y2="15" style="fill:none; stroke:black; stroke-width:2"></line>
+            </svg>
+        </li>
+        <li class="makeArrow">
+            <svg viewBox="0 0 20 20" width="13" height="13">
+                <line x1="1" y1="10" x2="19" y2="10" style="fill:none; stroke:black; stroke-width:2"></line>
+                <path d="M 16 7 L 19 10 L 16 13 z" stroke="black" stroke-width="2"></path>
+            </svg>
+        </li>
+        <li class="makeText">
+            <svg viewBox="0 0 20 20" width="13" height="13">
+                <text x="2" y="18" font-family="Times" font-size="22">
+                    A
+                </text>
+            </svg>
+        </li>
+    </ul>
+</div>
 
 <!--<nav class="navbar navbar-light bg-faded">-->
 <!--<ul class="nav navbar-nav contexts">-->
