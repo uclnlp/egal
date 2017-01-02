@@ -12,16 +12,14 @@ define(['./egal', 'base/js/namespace', 'jquery'], function (egal, Jupyter, $) {
         var cell = Jupyter.notebook.get_selected_cell();
         // Toggle visibility of the input div
         cell.element.find("div.input").toggle('slow');
-        cell.metadata.hide_input = !cell.metadata.hide_input;
+        cell.metadata.is_egal = !cell.metadata.is_egal;
     };
-    var toggle_egal = function () {
-        // Find the selected cell
-        var cell = Jupyter.notebook.get_selected_cell();
-        // Toggle visibility of the input div
+
+    var setup_egal_cell = function (cell) {
         cell.element.find("div div.input_area > *").toggle();
         var inputArea = cell.element.find("div div.input_area");
         var cellToolBar = cell.element.find(".celltoolbar");
-        if (!cell.metadata.hide_input) {
+        if (cell.metadata.is_egal) {
             old_color = inputArea.css("background-color");
             inputArea.append($("<div id='pups'></div>"));
             var canvas = new egal.Egal('#pups', 'blah', {
@@ -37,17 +35,20 @@ define(['./egal', 'base/js/namespace', 'jquery'], function (egal, Jupyter, $) {
             inputArea.css("background-color", old_color);
             inputArea.css("border-style", "solid");
             cellToolBar.css("border-bottom", "none");
-
         }
-        // cell.element.find("div .prompt").toggle();
-        cell.metadata.hide_input = !cell.metadata.hide_input;
-        console.log(cell);
+    };
+
+    var toggle_egal = function () {
+        // Find the selected cell
+        var cell = Jupyter.notebook.get_selected_cell();
+        cell.metadata.is_egal = !cell.metadata.is_egal;
+        setup_egal_cell(cell);
     };
 
     var update_input_visibility = function () {
         Jupyter.notebook.get_cells().forEach(function (cell) {
-            if (cell.metadata.hide_input) {
-                cell.element.find("div.input").hide();
+            if (cell.metadata.is_egal) {
+                setup_egal_cell(cell);
             }
         })
     };

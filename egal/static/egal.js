@@ -789,7 +789,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
 
                     text.attr({
-                        text: $(textInput).val()
+                        text: $(textInput).val(),
+                        'font-size': 20
                     });
 
                     // $(this).remove();
