@@ -70,7 +70,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         linkContextButtonNew(self.container + " .select", this.selectionContext);
         $(self.container + " .select").addClass("active");
-
+        $(self.container + " .style-menu").hide();
 
         linkContextButtonNew(self.container + " .makeRect", this.makeRect);
         linkContextButtonNew(self.container + " .makeCircle", this.makeCircle);
@@ -113,6 +113,11 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         });
         linkActionButton(self.container + " .save", function () {
             self.saveCurrentSVG();
+        });
+        linkActionButton(self.container + " .cut", function () {
+            // $(self.svg).empty();
+            // $(self.drawing + ">div").remove();
+            self.selectionContext.cutSelection();
         });
 
         // $(self.container + " .style").click(function () {
@@ -158,11 +163,16 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
 
         this.selectionContext.onSelect(function (snapElem) {
-            core = snapElem.select(".core");
-            console.log(snapElem.attr("fill"));
-            $(self.container + " .wi").val(trimPX(core.attr("strokeWidth")));
-            $(self.container + " .bg").val(Snap.color(core.attr("fill")).hex);
-            $(self.container + " .fg").val(Snap.color(core.attr("stroke")).hex);
+            if (snapElem) {
+                core = snapElem.select(".core");
+                console.log(snapElem.attr("fill"));
+                $(self.container + " .style-menu").show();
+                $(self.container + " .wi").val(trimPX(core.attr("strokeWidth")));
+                $(self.container + " .bg").val(Snap.color(core.attr("fill")).hex);
+                $(self.container + " .fg").val(Snap.color(core.attr("stroke")).hex);
+            } else {
+                $(self.container + " .style-menu").hide();
+            }
         });
 
 
@@ -447,10 +457,13 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             // else {
             //     dragged = false;
             // }
-            if (this.currentSelection) {
-                this.currentSelection.select(".core").attr({filter: null});
-                currentSelection = null;
+            this.selectElement(null);
+        };
 
+        this.cutSelection = function () {
+            if (this.currentSelection) {
+                this.currentSelection.remove();
+                this.selectElement(null);
             }
         };
 
@@ -462,7 +475,9 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 this.currentSelection.select(".core").removeClass("egal-select");
             }
             this.currentSelection = elem;
-            elem.select(".core").attr({filter: drupyter.filter}).addClass("egal-select");
+            if (elem) {
+                elem.select(".core").attr({filter: drupyter.filter}).addClass("egal-select");
+            }
             $.each(listeners, function (index, value) {
                 value(elem);
             });
@@ -838,7 +853,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         field.setAttributeNS(null, "y", y);
         field.setAttributeNS(null, "width", width);
         field.setAttributeNS(null, "height", height);
-        var textInput = $("<input type='text' style='font-size: " + fontSize +  "px;width: " + width + "px; text-align: center'>");
+        var textInput = $("<input type='text' style='font-size: " + fontSize + "px;width: " + width + "px; text-align: center'>");
         var removed = false;
         textInput.val(init);
         $(field).append(textInput);
