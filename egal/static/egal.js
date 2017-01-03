@@ -222,7 +222,9 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 endPoint.attr({id: elem.attr("id") + "_endpoint_" + index})
             });
             var bbox = elem.getBBox();
-            var label = self.snap.text(bbox.cx, bbox.cy, "").addClass("label");
+            var label = self.snap.text(bbox.cx, bbox.cy, "").addClass("label").attr({
+                'font-size': 20
+            });
             elem.append(label);
             this.activateElement(elem);
         };
@@ -422,7 +424,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             var bbox = element.getBBox();
             var label = element.select(".label");
             createForeignTextInput(element, bbox.cx - (bbox.width - 20) / 2, bbox.cy - 15, bbox.width - 20, 20,
-                label.attr("text"),
+                label.attr("text"), 20,
                 function (textVal) {
                     label.attr({
                         "text-anchor": "middle",
@@ -829,14 +831,14 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
     }
 
-    function createForeignTextInput(parent, x, y, width, height, init, acceptFunction) {
+    function createForeignTextInput(parent, x, y, width, height, init, fontSize, acceptFunction) {
         var svgns = "http://www.w3.org/2000/svg";
         var field = document.createElementNS(svgns, "foreignObject");
         field.setAttributeNS(null, "x", x);
         field.setAttributeNS(null, "y", y);
         field.setAttributeNS(null, "width", width);
         field.setAttributeNS(null, "height", height);
-        var textInput = $("<input type='text' style='width: " + width + "px; text-align: center'>");
+        var textInput = $("<input type='text' style='font-size: " + fontSize +  "px;width: " + width + "px; text-align: center'>");
         var removed = false;
         textInput.val(init);
         $(field).append(textInput);
@@ -883,7 +885,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             drupyter.registerElement(textGroup);
             if (field) field.saveRemove();
 
-            field = createForeignTextInput($(drupyter.svg), x, y, 50, 30, "", function (textVal) {
+            field = createForeignTextInput($(drupyter.svg), x, y, 50, 30, "", 20, function (textVal) {
                 console.log(textVal);
                 text.attr({
                     y: y + 20,
