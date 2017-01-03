@@ -69,6 +69,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         $(self.container).append("<div class='hidden' style=''></div>");
 
         linkContextButtonNew(self.container + " .select", this.selectionContext);
+        $(self.container + " .select").addClass("active");
+
 
         linkContextButtonNew(self.container + " .makeRect", this.makeRect);
         linkContextButtonNew(self.container + " .makeCircle", this.makeCircle);
@@ -103,8 +105,9 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         linkToggleButton(self.container + " .toggle-visible", this.toggleMenuBar);
 
         linkActionButton(self.container + " .clear", function () {
-            $(self.svg).empty();
-            $(self.drawing + ">div").remove();
+            // $(self.svg).empty();
+            // $(self.drawing + ">div").remove();
+            $(self.snap.node).find(".drupElem").remove();
             self.connectContext.clear();
             self.currentId = 0;
         });
@@ -317,6 +320,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             var cloned = $(self.drawing).clone();
             cloned.find(".transient").remove();
             cloned.find("#egal_background").remove();
+            cloned.find(".egal-select").attr({filter: null});
             self.saveContent(cloned.html());
         };
 
@@ -452,10 +456,11 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         this.selectElement = function (elem) {
             // console.log(this.listeners);
             if (this.currentSelection) {
-                this.currentSelection.select(".core").attr({filter: null})
+                this.currentSelection.select(".core").attr({filter: null});
+                this.currentSelection.select(".core").removeClass("egal-select");
             }
             this.currentSelection = elem;
-            elem.select(".core").attr({filter: drupyter.filter});
+            elem.select(".core").attr({filter: drupyter.filter}).addClass("egal-select");
             $.each(listeners, function (index, value) {
                 value(elem);
             });
@@ -693,7 +698,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             if (!line) {
                 line = drupyter.snap.line(bbox.cx, bbox.cy, bbox.cx, bbox.cy).attr({
                     stroke: '#000',
-                }); //.addClass("transient");
+                }).addClass("drupElem");
                 line.attr("data-n1", endPoint.attr("id"));
                 if (this.arrow) {
                     line.attr({"marker-end": drupyter.marker});
@@ -832,16 +837,28 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         field.setAttributeNS(null, "width", width);
         field.setAttributeNS(null, "height", height);
         var textInput = $("<input type='text' style='width: " + width + "px; text-align: center'>");
+        var removed = false;
         textInput.val(init);
         $(field).append(textInput);
         $(field).focusout(function (e) {
+            // console.log(parent);
+            // console.log($(field).parent());
+            acceptFunction(textInput.val());
+            field.saveRemove();
+
         });
         $(field).keypress(function (e) {
             if (e.keyCode == 13) {
                 acceptFunction(textInput.val());
-                this.remove();
+                field.saveRemove();
             }
         });
+        field.saveRemove = function () {
+            if (!removed) {
+                removed = true;
+                $(field).remove();
+            }
+        };
         parent.append(field);
         textInput.get(0).focus();
         return field;
@@ -864,6 +881,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             text = drupyter.snap.text(x, y, "").addClass("core");
             var textGroup = drupyter.snap.group(text);
             drupyter.registerElement(textGroup);
+            if (field) field.saveRemove();
+
             field = createForeignTextInput($(drupyter.svg), x, y, 50, 30, "", function (textVal) {
                 console.log(textVal);
                 text.attr({
