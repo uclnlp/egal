@@ -416,19 +416,21 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         this.onDblClickElement = function (e, element) {
             console.log("OnDblClick");
             var bbox = element.getBBox();
-            createForeignTextInput(element, bbox.cx - 50, bbox.cy - 10, 100, 20, function (textVal) {
-                var label = element.select(".label");
-                label.attr({
-                    "text-anchor": "middle",
-                    "alignment-baseline": "central",
-                    text: textVal
+            var label = element.select(".label");
+            createForeignTextInput(element, bbox.cx - (bbox.width - 20) / 2, bbox.cy - 15, bbox.width - 20, 20,
+                label.attr("text"),
+                function (textVal) {
+                    label.attr({
+                        "text-anchor": "middle",
+                        "alignment-baseline": "central",
+                        text: textVal
+                    });
+                    var labelBbox = label.getBBox();
+                    label.attr({
+                        // x: bbox.cx - (labelBbox.width / 2),
+                        // y: bbox.cy + (labelBbox.height / 2)
+                    })
                 });
-                var labelBbox = label.getBBox();
-                label.attr({
-                    // x: bbox.cx - (labelBbox.width / 2),
-                    // y: bbox.cy + (labelBbox.height / 2)
-                })
-            });
         };
 
 
@@ -822,17 +824,17 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
     }
 
-    function createForeignTextInput(parent, x, y, width, height, acceptFunction) {
+    function createForeignTextInput(parent, x, y, width, height, init, acceptFunction) {
         var svgns = "http://www.w3.org/2000/svg";
         var field = document.createElementNS(svgns, "foreignObject");
         field.setAttributeNS(null, "x", x);
         field.setAttributeNS(null, "y", y);
         field.setAttributeNS(null, "width", width);
         field.setAttributeNS(null, "height", height);
-        var textInput = $("<input type='text' style='width: " + width + "px'>");
+        var textInput = $("<input type='text' style='width: " + width + "px; text-align: center'>");
+        textInput.val(init);
         $(field).append(textInput);
         $(field).focusout(function (e) {
-
         });
         $(field).keypress(function (e) {
             if (e.keyCode == 13) {
@@ -862,7 +864,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             text = drupyter.snap.text(x, y, "").addClass("core");
             var textGroup = drupyter.snap.group(text);
             drupyter.registerElement(textGroup);
-            field = createForeignTextInput($(drupyter.svg), x, y, 50, 30, function (textVal) {
+            field = createForeignTextInput($(drupyter.svg), x, y, 50, 30, "", function (textVal) {
                 console.log(textVal);
                 text.attr({
                     y: y + 20,
