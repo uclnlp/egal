@@ -119,6 +119,11 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             // $(self.drawing + ">div").remove();
             self.selectionContext.cutSelection();
         });
+        linkActionButton(self.container + " .paste", function () {
+            // $(self.svg).empty();
+            // $(self.drawing + ">div").remove();
+            self.selectionContext.pasteSelection();
+        });
 
         // $(self.container + " .style").click(function () {
         //     console.log($(self.container + " .style-modal"));
@@ -226,11 +231,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         };
 
-        this.registerElement = function (elem) {
-            elem.attr({id: self.createNewId()}).addClass("drupElem");
-            elem.selectAll(".endPoint").forEach(function (endPoint, index) {
-                endPoint.attr({id: elem.attr("id") + "_endpoint_" + index})
-            });
+        this.registerAndDecorateElement = function (elem) {
+            this.registerElement(elem);
             var bbox = elem.getBBox();
             var label = self.snap.text(bbox.cx, bbox.cy, "").addClass("label").attr({
                 'font-size': 20,
@@ -238,6 +240,13 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 "alignment-baseline": "central",
             });
             elem.append(label);
+        };
+
+        this.registerElement = function (elem) {
+            elem.attr({id: self.createNewId()}).addClass("drupElem");
+            elem.selectAll(".endPoint").forEach(function (endPoint, index) {
+                endPoint.attr({id: elem.attr("id") + "_endpoint_" + index})
+            });
             this.activateElement(elem);
         };
 
@@ -362,7 +371,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 group.append(drupyter.snap.circle(cx + radius, cy, 5).attr(attr).addClass("endPoint right"));
                 // var group = drupyter.snap.group(circle, upEndPoint, downEndPoint, leftEndPoint, rightEndPoint);
                 console.log(group);
-                drupyter.registerElement(group);
+                drupyter.registerAndDecorateElement(group);
                 drupyter.saveCurrentSVG();
                 circle = null;
 
@@ -411,6 +420,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         var moveListeners = [];
         var dragging = false;
         var dragged = false;
+        var self = this;
 
         this.onSelect = function (listener) {
             listeners.push(listener)
@@ -466,6 +476,21 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             if (this.currentSelection) {
                 this.currentSelection.remove();
                 this.selectElement(null);
+            }
+        };
+
+        this.pasteSelection = function () {
+            if (this.currentSelection) {
+                var cloned = this.currentSelection.clone();
+                // $(cloned.node).find("*").unbind();
+                cloned.selectAll("*").forEach(function(e) {
+                    // e.removeData();
+                    e.transform("t10,10");
+                    e.paper = self.currentSelection.paper;
+                });
+                console.log(cloned.parent());
+                drupyter.registerElement(cloned);
+                this.selectElement(cloned);
             }
         };
 
@@ -544,7 +569,10 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         this.onDragCore = function (dx, dy, x, y, event, core) {
             var parent = core.parent();
+            console.log(core);
+            console.log(core.parent());
             core.transform(core.data("orig_transform") + "T" + dx + "," + dy);
+            // console.log(parent.selectAll(".endPoint"));
             parent.selectAll(".endPoint").forEach(function (ep) {
                 ep.transform(ep.data("orig_transform") + "T" + dx + "," + dy);
                 $.each(moveListeners, function (index, listener) {
@@ -657,7 +685,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         drupyter.selectionContext.onMove(function (elem) {
             var bbox = elem.getBBox();
-            // console.log("Moved " + elem);
+            console.log(elem);
             // console.log(elem.paper.selectAll("[data-n1='" + elem.attr("id") + "'"));
 
             elem.paper.selectAll("[data-n1='" + elem.attr("id") + "'").forEach(function (connector) {
@@ -734,7 +762,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 });
                 line.attr("data-n2", endPoint.attr("id")).addClass("core");
                 var group = drupyter.snap.g(line);
-                drupyter.registerElement(group);
+                drupyter.registerAndDecorateElement(group);
 
                 line = null
             }
@@ -901,7 +929,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             var y = e.pageY - offset.top;
             text = drupyter.snap.text(x, y, "").addClass("core");
             var textGroup = drupyter.snap.group(text);
-            drupyter.registerElement(textGroup);
+            drupyter.registerAndDecorateElement(textGroup);
             if (field) field.saveRemove();
 
             field = createForeignTextInput($(drupyter.svg), x, y, 50, 30, "", 20, function (textVal) {
@@ -945,7 +973,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 group.append(drupyter.snap.circle(cx + halfWidth, cy + halfHeight, 5).attr(attr).addClass("endPoint right-down"));
                 // var group = drupyter.snap.group(circle, upEndPoint, downEndPoint, leftEndPoint, rightEndPoint);
                 console.log(group);
-                drupyter.registerElement(group);
+                drupyter.registerAndDecorateElement(group);
                 drupyter.saveCurrentSVG();
                 rect = null;
             } else {
