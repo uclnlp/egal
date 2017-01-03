@@ -12,6 +12,11 @@ cd egal
 export PYTHONPATH=. 
 ```
 
+**or** (experimental) install python package directly:
+```bash
+pip3 install git+https://github.com/uclmr/egal.git
+```
+
 #### Install and Enable Extension
 ```bash
 jupyter nbextension install --py egal 
