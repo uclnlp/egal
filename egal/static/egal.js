@@ -485,7 +485,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 // $(cloned.node).find("*").unbind();
                 cloned.selectAll("*").forEach(function(e) {
                     // e.removeData();
-                    e.transform("t10,10");
+                    e.transform(e.transform().globalMatrix.toTransformString() + "t10,10");
                     e.paper = self.currentSelection.paper;
                 });
                 console.log(cloned.parent());
