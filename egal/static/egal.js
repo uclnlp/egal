@@ -233,7 +233,9 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             });
             var bbox = elem.getBBox();
             var label = self.snap.text(bbox.cx, bbox.cy, "").addClass("label").attr({
-                'font-size': 20
+                'font-size': 20,
+                "text-anchor": "middle",
+                "alignment-baseline": "central",
             });
             elem.append(label);
             this.activateElement(elem);
@@ -730,7 +732,9 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                     x2: bbox.cx,
                     y2: bbox.cy
                 });
-                line.attr("data-n2", endPoint.attr("id"));
+                line.attr("data-n2", endPoint.attr("id")).addClass("core");
+                var group = drupyter.snap.g(line);
+                drupyter.registerElement(group);
 
                 line = null
             }
