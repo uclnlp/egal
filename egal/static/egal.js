@@ -136,7 +136,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             self.saveCurrentSVG();
         });
 
-        ;
+
         $(self.container + " .wi").change(function () {
             // var snapSelection = new Snap(self.selectionContext.currentSelection);
             self.selectionContext.currentSelection.select(".core").attr({strokeWidth: $(self.container + " .wi").val()})
@@ -166,6 +166,10 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         this.activateElement = function (elem) {
             elem.click(function (e) {
                 if (self.currentContext.onClickElement) self.currentContext.onClickElement(e, this);
+            });
+            elem.dblclick(function (e) {
+                if (self.currentContext.onDblClickElement) self.currentContext.onDblClickElement(e, this);
+                // this.node.focus();
             });
             elem.mousedown(function (e) {
                 console.log("MouseDown!");
@@ -214,6 +218,9 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             elem.selectAll(".endPoint").forEach(function (endPoint, index) {
                 endPoint.attr({id: elem.attr("id") + "_endpoint_" + index})
             });
+            var bbox = elem.getBBox();
+            var label = self.snap.text(bbox.cx, bbox.cy, "").addClass("label");
+            elem.append(label);
             this.activateElement(elem);
         };
 
@@ -245,6 +252,16 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             // $(self.svg).find("*").click(function (e) {
             //     if (self.currentContext.onClickElement) self.currentContext.onClickElement(e, this);
             // });
+            // $(self.container).attr({tabindex:1});
+
+            // $(self.container).keypress(function (e) {
+            //     console.log("Key pressed");
+            // });
+            // $(self.container).click(function (e) {
+            //     this.focus();
+            // });
+
+
             self.snap.click(function (e) {
                 if (self.currentContext.onClick) self.currentContext.onClick(e, this);
             });
@@ -396,6 +413,24 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             //     currentSelection = null
             // }
         };
+        this.onDblClickElement = function (e, element) {
+            console.log("OnDblClick");
+            var bbox = element.getBBox();
+            createForeignTextInput(element, bbox.cx - 50, bbox.cy - 10, 100, 20, function (textVal) {
+                var label = element.select(".label");
+                label.attr({
+                    "text-anchor": "middle",
+                    "alignment-baseline": "central",
+                    text: textVal
+                });
+                var labelBbox = label.getBBox();
+                label.attr({
+                    // x: bbox.cx - (labelBbox.width / 2),
+                    // y: bbox.cy + (labelBbox.height / 2)
+                })
+            });
+        };
+
 
         this.onClickBackground = function (e, element) {
             console.log("OnClick Paper");
@@ -490,6 +525,12 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                     listener(ep);
                 });
             });
+            parent.selectAll(".label").forEach(function (label) {
+                label.transform(label.data("orig_transform") + "T" + dx + "," + dy);
+                $.each(moveListeners, function (index, listener) {
+                    listener(label);
+                });
+            });
             $.each(moveListeners, function (index, listener) {
                 listener(core);
             });
@@ -507,6 +548,10 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             parent.selectAll(".endPoint").forEach(function (ep) {
                 ep.data("orig_transform", ep.transform().globalMatrix.toTransformString());
             });
+            parent.selectAll(".label").forEach(function (label) {
+                label.data("orig_transform", label.transform().globalMatrix.toTransformString());
+            });
+
             dragging = true;
         };
         this.onDragCoreEnd = function (x, y, event, core) {
@@ -777,6 +822,28 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
     }
 
+    function createForeignTextInput(parent, x, y, width, height, acceptFunction) {
+        var svgns = "http://www.w3.org/2000/svg";
+        var field = document.createElementNS(svgns, "foreignObject");
+        field.setAttributeNS(null, "x", x);
+        field.setAttributeNS(null, "y", y);
+        field.setAttributeNS(null, "width", width);
+        field.setAttributeNS(null, "height", height);
+        var textInput = $("<input type='text' style='width: " + width + "px'>");
+        $(field).append(textInput);
+        $(field).focusout(function (e) {
+
+        });
+        $(field).keypress(function (e) {
+            if (e.keyCode == 13) {
+                acceptFunction(textInput.val());
+                this.remove();
+            }
+        });
+        parent.append(field);
+        textInput.get(0).focus();
+        return field;
+    }
 
     function TextContext(drupyter) {
 
@@ -786,79 +853,22 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         this.onClick = function (e, element) {
             if (field) {
-                $(field).remove();
-                $(text.node).remove();
+                // $(field).remove();
+                // $(text.node).remove();
             }
             var offset = $(element.node).offset();
             var x = e.pageX - offset.left;
             var y = e.pageY - offset.top;
-            var text = drupyter.snap.text(x, y, "").addClass("core");
+            text = drupyter.snap.text(x, y, "").addClass("core");
             var textGroup = drupyter.snap.group(text);
             drupyter.registerElement(textGroup);
-            var svgns = "http://www.w3.org/2000/svg";
-            var field = document.createElementNS(svgns, "foreignObject");
-            field.setAttributeNS(null, "x", x);
-            field.setAttributeNS(null, "y", y);
-            field.setAttributeNS(null, "width", 50);
-            field.setAttributeNS(null, "height", 30);
-            var textInput = $("<input id='input" + num + "' type='text'>");
-            $(field).append(textInput);
-            // field.innerHTML = "<input type='text'>";
-            // var textInput = $(field).children().get(0);
-            $(drupyter.svg).append(field);
-            console.log(textInput);
-            textInput.focus();
-            num += 1;
-
-
-            $(field).keypress(function (e) {
-                if (e.keyCode == 13) {
-                    console.log($(textInput).val());
-                    // text.attr({
-                    //     transform: new Snap.Matrix(1, 0, 0, 1, x, y + $(textInput).height())
-                    // });
-                    text.attr("y", y + $(textInput).height());
-
-
-                    text.attr({
-                        text: $(textInput).val(),
-                        'font-size': 20
-                    });
-
-                    // $(this).remove();
-                    // field.innerHTML = "<div>" + $(textInput).val() + "</div>";
-                    // var textDiv = $(field).children().get(0);
-                    // var hidden = $(drupyter.container + ' div.hidden');
-                    // hidden.text($(textInput).val());
-                    // console.log(hidden);
-                    $(field).remove();
-                    drupyter.registerElement(textGroup);
-                    // MathJax.Hub.Queue(["Typeset", MathJax.Hub, hidden.get(0)]);
-                    // MathJax.Hub.Queue(function () {
-                    //     console.log("Done!");
-                    //     console.log(x);
-                    //     console.log(y);
-                    //     created_group = $(drupyter.container + ' div.hidden span svg g');
-                    //
-                    //     console.log(created_group);
-                    //     $(drupyter.svg).append(created_group);
-                    //     // snap_group = Snap(created_group.get(0));
-                    //     // console.log(snap_group.node);
-                    //     var myMatrix = new Snap.Matrix(0.05, 0, 0, -0.05, x, y);
-                    //     created_group.attr({
-                    //         transform: myMatrix
-                    //     });
-                    //     // // myMatrix.scale(0.05, -0.05);            // play with scaling before and after the rotate
-                    //     // // myMatrix.translate(x, y);      // this translate will not be applied to the rotation
-                    //     // // myMatrix.rotate(0);            // rotate
-                    //     // snap_group.attr({transform: myMatrix});
-                    //     // // var group = drupyter.snap.group(created_SVG.get(0));
-                    //     // // console.log(group)
-                    //     // $(drupyter.svg).append(snap_group.node);
-                    //     drupyter.saveCurrentSVG();
-                    // });
-
-                }
+            field = createForeignTextInput($(drupyter.svg), x, y, 50, 30, function (textVal) {
+                console.log(textVal);
+                text.attr({
+                    y: y + 20,
+                    text: textVal,
+                    'font-size': 20
+                });
             });
 
         };
