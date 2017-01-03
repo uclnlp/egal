@@ -33,6 +33,7 @@
     .egal-menu-bar {
         margin: 10px;
         font-style: normal;
+        height:20px;
 
         /*all: initial;*/
         /*font-size:100%;*/
@@ -50,9 +51,14 @@
         /*margin-top: 2px;*/
     }
 
-    .style-menu {
+    .style-menu input {
         font-size: 13px;
-        /*vertical-align: top;*/
+        vertical-align: bottom;
+    }
+
+    .style-menu li text {
+        font-size: 13px;
+        vertical-align: top;
     }
 
 
@@ -63,12 +69,17 @@
             <li class="toggle-visible"><i class="fa fa-toggle-on fa-1x"></i></li>
         </ul>
         <ul class="egal-menu hideable">
+            <li>
+                <input class="height" type="text" size="4" style="font-size: 13px;vertical-align: bottom;"/>
+            </li>
             <li class="save">
                 <i class="fa fa-save fa-1x"></i>
             </li>
             <li class="clear">
                 <i class="fa fa-trash fa-1x"></i>
             </li>
+
+
             <li class="select">
                 <i class="fa fa-hand-o-right fa-1x"></i>
             </li>
@@ -104,6 +115,7 @@
                     </text>
                 </svg>
             </li>
+
         </ul>
     </div>
     <div class="style-menu">
@@ -119,9 +131,6 @@
             </li>
             <li>
                 wi <input class="wi" type="text" size="2"/>
-            </li>
-            <li>
-                h <input class="height" type="text" size="4"/>
             </li>
 
         </ul>
