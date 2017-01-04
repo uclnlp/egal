@@ -474,6 +474,11 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         this.cutSelection = function () {
             if (this.currentSelection) {
+                this.currentSelection.selectAll(".endPoint").forEach(function (ep) {
+                    // console.log(drupyter.svg + " [data-n1='" + ep.attr("id") + "']");
+                    $(drupyter.svg + " [data-n1='" + ep.attr("id") + "']").remove();
+                    $(drupyter.svg + " [data-n2='" + ep.attr("id") + "']").remove();
+                });
                 this.currentSelection.remove();
                 this.selectElement(null);
             }
@@ -483,7 +488,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             if (this.currentSelection) {
                 var cloned = this.currentSelection.clone();
                 // $(cloned.node).find("*").unbind();
-                cloned.selectAll("*").forEach(function(e) {
+                cloned.selectAll("*").forEach(function (e) {
                     // e.removeData();
                     e.transform(e.transform().globalMatrix.toTransformString() + "T10,10");
                     e.paper = self.currentSelection.paper;
@@ -517,8 +522,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             });
         };
         this.onMouseOut = function (e, element) {
-            console.log("Out");
-            console.log(dragging);
+            // console.log("Out");
+            // console.log(dragging);
             if (!dragging) element.selectAll(".endPoint").forEach(function (endPoint) {
                 endPoint.attr({opacity: 0.0})
             });
