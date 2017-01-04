@@ -77,7 +77,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         linkContextButtonNew(self.container + " .makeText", this.textContext);
         linkContextButtonNew(self.container + " .makeArrow", this.connectContext, function () {
             self.connectContext.arrow = true;
-            console.log("Blah");
+            // console.log("Blah");
         });
         linkContextButtonNew(self.container + " .makeLine", this.connectContext, function () {
             self.connectContext.arrow = false;
@@ -170,7 +170,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         this.selectionContext.onSelect(function (snapElem) {
             if (snapElem) {
                 core = snapElem.select(".core");
-                console.log(snapElem.attr("fill"));
+                // console.log(snapElem.attr("fill"));
                 $(self.container + " .style-menu").show();
                 $(self.container + " .wi").val(trimPX(core.attr("strokeWidth")));
                 $(self.container + " .bg").val(Snap.color(core.attr("fill")).hex);
@@ -190,7 +190,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 // this.node.focus();
             });
             elem.mousedown(function (e) {
-                console.log("MouseDown!");
+                // console.log("MouseDown!");
                 if (self.currentContext.onMouseDownElement) self.currentContext.onMouseDownElement(e, this);
             });
             elem.mouseover(function (e) {
@@ -269,7 +269,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
             // self.activateElement($(self.svg).find("*"));
             var elements = self.snap.selectAll(".drupElem");
-            console.log(elements);
+            // console.log(elements);
             elements.forEach(function (elem) {
                 self.activateElement(new Snap(elem));
             });
@@ -309,7 +309,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             });
 
             self.connectContext.loadConnectors();
-            console.log("Set SVG");
+            // console.log("Set SVG");
             // MathJax.Hub.Queue(["Typeset", MathJax.Hub, self.svg])
         };
 
@@ -358,7 +358,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         this.onClick = function (e, element) {
             if (circle) {
-                console.log(circle.attr('cx'));
+                // console.log(circle.attr('cx'));
                 var cx = Number(circle.attr('cx'));
                 var cy = Number(circle.attr('cy'));
                 var radius = Number(circle.attr('r'));
@@ -493,7 +493,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                     e.transform(e.transform().globalMatrix.toTransformString() + "T10,10");
                     e.paper = self.currentSelection.paper;
                 });
-                console.log(cloned.parent());
+                // console.log(cloned.parent());
                 drupyter.registerElement(cloned);
                 this.selectElement(cloned);
             }
@@ -574,8 +574,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         this.onDragCore = function (dx, dy, x, y, event, core) {
             var parent = core.parent();
-            console.log(core);
-            console.log(core.parent());
+            // console.log(core);
+            // console.log(core.parent());
             core.transform(core.data("orig_transform") + "T" + dx + "," + dy);
             // console.log(parent.selectAll(".endPoint"));
             parent.selectAll(".endPoint").forEach(function (ep) {
@@ -666,8 +666,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         this.arrow = false;
 
         this.onClick = function (e, element) {
-            console.log("Paper clicked!");
-            console.log(element);
+            // console.log("Paper clicked!");
+            // console.log(element);
             // if (line) {
             //     line = null;
             //     drupyter.saveCurrentSVG();
@@ -690,7 +690,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         drupyter.selectionContext.onMove(function (elem) {
             var bbox = elem.getBBox();
-            console.log(elem);
+            // console.log(elem);
             // console.log(elem.paper.selectAll("[data-n1='" + elem.attr("id") + "'"));
 
             elem.paper.selectAll("[data-n1='" + elem.attr("id") + "'").forEach(function (connector) {
@@ -720,7 +720,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             });
         };
         this.onMouseOut = function (e, element) {
-            console.log("Out");
+            // console.log("Out");
             // console.log(dragging);
             element.selectAll(".endPoint").forEach(function (endPoint) {
                 endPoint.attr({opacity: 0.0})
@@ -730,7 +730,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         this.onMouseMove = function (e, element) {
             if (line) {
-                console.log("Changing ...");
+                // console.log("Changing ...");
                 var offset = $(element.node).offset();
                 var x = e.pageX - offset.left;
                 var y = e.pageY - offset.top;
@@ -745,7 +745,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         };
 
         this.onClickEndPoint = function (event, endPoint) {
-            console.log("Starting line at Endpoint");
+            // console.log("Starting line at Endpoint");
             var bbox = endPoint.getBBox();
             if (!line) {
                 line = drupyter.snap.line(bbox.cx, bbox.cy, bbox.cx, bbox.cy).attr({
@@ -754,10 +754,10 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 line.attr("data-n1", endPoint.attr("id"));
                 if (this.arrow) {
                     line.attr({"marker-end": drupyter.marker});
-                    console.log(drupyter.marker);
+                    // console.log(drupyter.marker);
                 }
                 line.prependTo(line.paper);
-                console.log("Arrow: " + this.arrow);
+                // console.log("Arrow: " + this.arrow);
                 // line.remove();
                 // drupyter.snap.before(line);
             } else {
@@ -795,10 +795,10 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         drupyter.selectionContext.onMove(function (elem) {
             var bbox = new Snap(elem).getBBox();
-            console.log("Moved " + elem);
+            // console.log("Moved " + elem);
             // line.attr({x2: bbox.cx, y2: bbox.cy})
             var elemLine = elem2line[elem.id];
-            console.log(elemLine);
+            // console.log(elemLine);
             if (elemLine) {
                 $.each(elemLine, function (index, elem) {
                     if (elem.start) {
@@ -818,7 +818,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         this.saveConnectors = function () {
             var currentConnectors = $(drupyter.drawing).children(".connector");
-            console.log(currentConnectors);
+            // console.log(currentConnectors);
             if (currentConnectors) {
                 currentConnectors.remove();
             }
@@ -830,9 +830,9 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         this.loadConnectors = function () {
             var connectors = $(drupyter.drawing).children(".connector");
             connectors.each(function (i, elem) {
-                console.log(elem);
-                console.log(typeof(elem));
-                console.log($(elem));
+                // console.log(elem);
+                // console.log(typeof(elem));
+                // console.log($(elem));
                 //    todo: set up line
                 //     var line = drupyter.snap.line({})
                 let id1 = elem.getAttribute("n1");
@@ -865,18 +865,18 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                     stroke: '#000',
                 }).addClass("transient");
                 line.prependTo(drupyter.snap);
-                console.log("Clicked start: " + id);
+                // console.log("Clicked start: " + id);
                 if (!elem2line[id]) elem2line[id] = [];
                 elem2line[id].push({line: line, start: true});
             } else {
-                console.log("Clicked end: " + id);
+                // console.log("Clicked end: " + id);
                 line.attr({x2: bbox.cx, y2: bbox.cy});
-                console.log(element.id);
+                // console.log(element.id);
                 if (!elem2line[id]) elem2line[id] = [];
                 elem2line[id].push({line: line, start: false});
                 connectors.push({n1: currentStart, n2: element.id});
                 currentStart = null;
-                console.log(elem2line);
+                // console.log(elem2line);
             }
         };
 
@@ -938,7 +938,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             if (field) field.saveRemove();
 
             field = createForeignTextInput($(drupyter.svg), x, y, 50, 30, "", 20, function (textVal) {
-                console.log(textVal);
+                // console.log(textVal);
                 text.attr({
                     y: y + 20,
                     text: textVal,
@@ -977,7 +977,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 group.append(drupyter.snap.circle(cx + halfWidth, cy - halfHeight, 5).attr(attr).addClass("endPoint right-up"));
                 group.append(drupyter.snap.circle(cx + halfWidth, cy + halfHeight, 5).attr(attr).addClass("endPoint right-down"));
                 // var group = drupyter.snap.group(circle, upEndPoint, downEndPoint, leftEndPoint, rightEndPoint);
-                console.log(group);
+                // console.log(group);
                 drupyter.registerAndDecorateElement(group);
                 drupyter.saveCurrentSVG();
                 rect = null;
@@ -1022,7 +1022,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         };
 
         this.onClickElement = function (e, element) {
-            console.log("Selected in MakeCircle Mode");
+            // console.log("Selected in MakeCircle Mode");
         }
 
 
