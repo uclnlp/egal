@@ -1,6 +1,9 @@
 # egal
 easy SVG drawing in jupyter and elsewhere...
 
+### Example
+![](screenshot.png)
+
 ### Installation
 
 #### Get the Python Package
