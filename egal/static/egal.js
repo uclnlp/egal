@@ -234,10 +234,12 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         this.registerAndDecorateElement = function (elem) {
             this.registerElement(elem);
             var bbox = elem.getBBox();
-            var label = self.snap.text(bbox.cx, bbox.cy, "").addClass("label").attr({
+            var label = self.snap.text(bbox.cx, bbox.cy, "").addClass("label sub").attr({
                 'font-size': 20,
                 "text-anchor": "middle",
                 "alignment-baseline": "central",
+                text: "&nbsp;",
+                opacity: 0.0,
             });
             elem.append(label);
         };
@@ -253,8 +255,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         this.loadContent = function (data) {
             $(self.drawing).html(data);
-            let height = self.options.height || $(self.svg).attr("height") || 400;
-            let width = self.options.width || 400;
+            var height = self.options.height || $(self.svg).attr("height") || 400;
+            var width = self.options.width || 400;
             $(self.svg).attr("height", height);
             $(self.svg).attr("width", width);
             self.snap = Snap($(self.svg).get(0));
@@ -365,10 +367,10 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 var attr = {stroke: "#000", strokeWidth: 1, fill: '#fff', opacity: 0.0}; //fillOpacity: 0
                 circle.addClass("core");
                 var group = drupyter.snap.group(circle);
-                group.append(drupyter.snap.circle(cx, cy - radius, 5).attr(attr).addClass("endPoint up"));
-                group.append(drupyter.snap.circle(cx, cy + radius, 5).attr(attr).addClass("endPoint down"));
-                group.append(drupyter.snap.circle(cx - radius, cy, 5).attr(attr).addClass("endPoint left"));
-                group.append(drupyter.snap.circle(cx + radius, cy, 5).attr(attr).addClass("endPoint right"));
+                group.append(drupyter.snap.circle(cx, cy - radius, 5).attr(attr).addClass("endPoint up sub"));
+                group.append(drupyter.snap.circle(cx, cy + radius, 5).attr(attr).addClass("endPoint down sub"));
+                group.append(drupyter.snap.circle(cx - radius, cy, 5).attr(attr).addClass("endPoint left sub"));
+                group.append(drupyter.snap.circle(cx + radius, cy, 5).attr(attr).addClass("endPoint right sub"));
                 // var group = drupyter.snap.group(circle, upEndPoint, downEndPoint, leftEndPoint, rightEndPoint);
                 console.log(group);
                 drupyter.registerAndDecorateElement(group);
@@ -440,18 +442,21 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             // if (currentSelection) {
             //     currentSelection = null
             // }
+            this.selectElement(element);
         };
         this.onDblClickElement = function (e, element) {
             console.log("OnDblClick");
             var bbox = element.getBBox();
             var label = element.select(".label");
+            var init = label.attr("text") === "&nbsp;" ? "" : label.attr("text")
             createForeignTextInput(element, bbox.cx - (bbox.width - 20) / 2, bbox.cy - 15, bbox.width - 20, 20,
-                label.attr("text"), 20,
+                init, 20,
                 function (textVal) {
                     label.attr({
-                        "text-anchor": "middle",
-                        "alignment-baseline": "central",
-                        text: textVal
+                        // "text-anchor": "middle",
+                        // "alignment-baseline": "central",
+                        text: textVal === "" ? "&nbsp;" : textVal,
+                        opacity: textVal === "" ? 0.0 : 1.0
                     });
                     var labelBbox = label.getBBox();
                     label.attr({
@@ -499,16 +504,130 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             }
         };
 
+        this.createSelectionHandles = function (elem) {
+            var bbox = elem.select(".core").getBBox();
+            var handleSize = 6;
+            var handleAttr = {
+                fill: "white",
+                stroke: "black"
+            };
+            var selectionBox = drupyter.snap.rect(bbox.x, bbox.y, bbox.width, bbox.height).attr({
+                fill: "none",
+                stroke: "black",
+                "vector-effect": "non-scaling-stroke"
+            }).addClass("selection_box selection_artifact transient");
+
+            function createHandle(handle_x, handle_y, classes, keepX, keepY) {
+                var handle = drupyter.snap.rect(handle_x - handleSize / 2, handle_y - handleSize / 2, handleSize, handleSize)
+                    .attr(handleAttr)
+                    .addClass("selection_handle selection_artifact transient")
+                    .addClass(classes);
+                // var selectionBBox = selectionBox.getBBox();
+                handle.data("ox", handle_x);
+                handle.data("oy", handle_y);
+
+                handle.drag(
+                    function (dx, dy, x, y, event) {
+                        // console.log("Dragging...");
+                        var fixed_x = handle.data("hx") - 2 * (handle.data("hx") - handle.data("sx"));
+                        var fixed_y = handle.data("hy") - 2 * (handle.data("hy") - handle.data("sy"));
+
+                        function newPosition(x, y) {
+                            return {x: newX(x), y: newY(y)};
+                        }
+
+                        function newX(x) {
+                            return keepX ? x : x + dx * (x - fixed_x) / (handle.data("hx") - fixed_x)
+                        }
+
+                        function newY(y) {
+                            return keepY ? y : y + dy * (y - fixed_y) / (handle.data("hy") - fixed_y)
+                        }
+
+                        //move the handles
+                        drupyter.snap.selectAll(".selection_handle").forEach(function (h) {
+                            var new_pos = newPosition(h.data("hx"), h.data("hy"));
+                            h.transform(h.data("orig_transform") + "t" +
+                                (new_pos.x - h.data("hx")).toFixed(4) + "," + (new_pos.y - h.data("hy")).toFixed(4));
+                            // console.log(h.data("orig_transform") + "t" +
+                            //     (new_pos.x - h.data("hx")).toFixed(4) + "," + (new_pos.y - h.data("hy")).toFixed(4));
+                        });
+                        elem.selectAll(".sub").forEach(function (h) {
+                            var new_pos = newPosition(h.data("x"), h.data("y"));
+                            h.transform(h.data("orig_transform") + "t" +
+                                (new_pos.x - h.data("x")).toFixed(4) + "," + (new_pos.y - h.data("y")).toFixed(4));
+                        });
+                        var scale_x = keepX ? 1 : (handle.data("hx") - fixed_x + dx) / (handle.data("hx") - fixed_x);
+                        var scale_y = keepY ? 1 : (handle.data("hy") - fixed_y + dy) / (handle.data("hy") - fixed_y);
+                        selectionBox.transform(selectionBox.data("orig_transform") +
+                            "S" + scale_x + "," + scale_y + "," + fixed_x + "," + fixed_y);
+                        // console.log(selectionBox.data("orig_transform") +
+                        //     "S" + scale_x + "," + scale_y + "," + fixed_x + "," + fixed_y);
+                        elem.select(".core").transform(elem.select(".core").data("orig_transform") +
+                            "S" + scale_x + "," + scale_y + "," + fixed_x + "," + fixed_y);
+
+                        elem.selectAll("*").forEach(function (e) {
+                            $.each(moveListeners, function (index, listener) {
+                                listener(e);
+                            });
+                        });
+
+                        //scale and move selectionBox
+                        //move label and end points
+                        //scale core
+
+                    },
+                    function (x, y, event) {
+                        //save: current handle position, current selection center, current fixed_pos
+                        drupyter.snap.selectAll(".selection_handle").forEach(function (h) {
+                            h.data("hx", h.getBBox().cx);
+                            h.data("hy", h.getBBox().cy);
+                            h.data("sx", selectionBox.getBBox().cx);
+                            h.data("sy", selectionBox.getBBox().cy);
+                        });
+                        drupyter.snap.selectAll(".selection_artifact").forEach(function (h) {
+                            h.data("orig_transform", h.transform().globalMatrix.toTransformString())
+                        });
+                        // console.log(elem.selectAll("*"));
+                        elem.selectAll("*").forEach(function (sub) {
+                            sub.data("orig_transform", sub.transform().globalMatrix.toTransformString());
+                            sub.data("x", sub.getBBox().cx);
+                            sub.data("y", sub.getBBox().cy);
+                        });
+
+                    },
+                    function (x, y, event) {
+
+                    }
+                )
+            }
+
+            createHandle(bbox.x2, bbox.cy, "east", false, true);
+            createHandle(bbox.x, bbox.cy, "west", false, true);
+            createHandle(bbox.cx, bbox.y, "north", true, false);
+            createHandle(bbox.cx, bbox.y2, "south", true, false);
+
+            createHandle(bbox.x2, bbox.y, "north east");
+            createHandle(bbox.x, bbox.y, "north west");
+            createHandle(bbox.x2, bbox.y2, "south east");
+            createHandle(bbox.x, bbox.y2, "south west");
+
+        };
+
 
         this.selectElement = function (elem) {
             // console.log(this.listeners);
             if (this.currentSelection) {
                 this.currentSelection.select(".core").attr({filter: null});
                 this.currentSelection.select(".core").removeClass("egal-select");
+                $(drupyter.svg + " .selection_artifact").remove();
+
             }
             this.currentSelection = elem;
             if (elem) {
                 elem.select(".core").attr({filter: drupyter.filter}).addClass("egal-select");
+                this.createSelectionHandles(elem);
+                // elem.append(selectionBox);
             }
             $.each(listeners, function (index, value) {
                 value(elem);
@@ -516,61 +635,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         };
 
-        this.onMouseOver = function (e, element) {
-            if (!dragging) element.selectAll(".endPoint").forEach(function (endPoint) {
-                endPoint.attr({opacity: 1.0})
-            });
-        };
-        this.onMouseOut = function (e, element) {
-            // console.log("Out");
-            // console.log(dragging);
-            if (!dragging) element.selectAll(".endPoint").forEach(function (endPoint) {
-                endPoint.attr({opacity: 0.0})
-            });
-        };
 
 
-        this.onDragEndPoint = function (dx, dy, x, y, event, endPoint) {
-            var parent = endPoint.parent();
-            var core = parent.select(".core");
-            var x_distance = endPoint.data("cx") - core.getBBox().cx;
-            var x_scale = (x_distance + dx) / x_distance; //need to be scaled down by current
-            var y_distance = endPoint.data("cy") - core.getBBox().cy;
-            var y_scale = (y_distance + dy) / y_distance;
-
-            if (endPoint.hasClass("right") || endPoint.hasClass("left")) {
-                y_scale = 1.0;
-            } else if (endPoint.hasClass("up") || endPoint.hasClass("down")) {
-                x_scale = 1.0
-            }
-            core.transform(core.data("orig_transform") + "S" + x_scale + "," + y_scale);
-            parent.selectAll(".endPoint").forEach(function (ep) {
-                var ep_dx = (x_scale - 1.0) * (ep.data("cx") - core.getBBox().cx);
-                var ep_dy = (y_scale - 1.0) * (ep.data("cy") - core.getBBox().cy);
-                ep.transform(ep.data("orig_transform") + "T" + ep_dx + "," + ep_dy);
-                $.each(moveListeners, function (index, listener) {
-                    listener(ep);
-                });
-
-            });
-        };
-
-        this.onDragEndPointStart = function (x, y, event, endPoint) {
-            var parent = endPoint.parent();
-            var core = parent.select(".core");
-            core.data("orig_transform", core.transform().globalMatrix.toTransformString());
-            parent.selectAll(".endPoint").forEach(function (ep) {
-                ep.data("orig_transform", ep.transform().globalMatrix.toTransformString());
-                ep.data("cx", ep.getBBox().cx);
-                ep.data("cy", ep.getBBox().cy);
-            });
-            dragging = true;
-        };
-
-        this.onDragEndPointEnd = function (x, y, event, core) {
-            dragging = false;
-            dragged = true;
-        };
 
         this.onDragCore = function (dx, dy, x, y, event, core) {
             var parent = core.parent();
@@ -589,6 +655,9 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 $.each(moveListeners, function (index, listener) {
                     listener(label);
                 });
+            });
+            drupyter.snap.selectAll(".selection_artifact").forEach(function (e) {
+                e.transform(e.data("orig_transform") + "T" + dx + "," + dy);
             });
             $.each(moveListeners, function (index, listener) {
                 listener(core);
@@ -610,6 +679,10 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             parent.selectAll(".label").forEach(function (label) {
                 label.data("orig_transform", label.transform().globalMatrix.toTransformString());
             });
+            drupyter.snap.selectAll(".selection_artifact").forEach(function (h) {
+                h.data("orig_transform", h.transform().globalMatrix.toTransformString())
+            });
+
 
             dragging = true;
         };
@@ -835,8 +908,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 // console.log($(elem));
                 //    todo: set up line
                 //     var line = drupyter.snap.line({})
-                let id1 = elem.getAttribute("n1");
-                let id2 = elem.getAttribute("n2");
+                var id1 = elem.getAttribute("n1");
+                var id2 = elem.getAttribute("n2");
                 var n1 = drupyter.snap.select('#' + id1);
                 var n2 = drupyter.snap.select('#' + id2);
                 var b1 = n1.getBBox();
@@ -968,14 +1041,14 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 var attr = {stroke: "#000", strokeWidth: 1, fill: '#fff', opacity: 0.0}; //fillOpacity: 0
                 rect.addClass("core");
                 var group = drupyter.snap.group(rect);
-                group.append(drupyter.snap.circle(cx, cy - halfHeight, 5).attr(attr).addClass("endPoint up"));
-                group.append(drupyter.snap.circle(cx, cy + halfHeight, 5).attr(attr).addClass("endPoint down"));
-                group.append(drupyter.snap.circle(cx - halfWidth, cy, 5).attr(attr).addClass("endPoint left"));
-                group.append(drupyter.snap.circle(cx + halfWidth, cy, 5).attr(attr).addClass("endPoint right"));
-                group.append(drupyter.snap.circle(cx - halfWidth, cy - halfHeight, 5).attr(attr).addClass("endPoint left-up"));
-                group.append(drupyter.snap.circle(cx - halfWidth, cy + halfHeight, 5).attr(attr).addClass("endPoint left-down"));
-                group.append(drupyter.snap.circle(cx + halfWidth, cy - halfHeight, 5).attr(attr).addClass("endPoint right-up"));
-                group.append(drupyter.snap.circle(cx + halfWidth, cy + halfHeight, 5).attr(attr).addClass("endPoint right-down"));
+                group.append(drupyter.snap.circle(cx, cy - halfHeight, 5).attr(attr).addClass("endPoint up sub"));
+                group.append(drupyter.snap.circle(cx, cy + halfHeight, 5).attr(attr).addClass("endPoint down sub"));
+                group.append(drupyter.snap.circle(cx - halfWidth, cy, 5).attr(attr).addClass("endPoint left sub"));
+                group.append(drupyter.snap.circle(cx + halfWidth, cy, 5).attr(attr).addClass("endPoint right sub"));
+                group.append(drupyter.snap.circle(cx - halfWidth, cy - halfHeight, 5).attr(attr).addClass("endPoint left-up sub"));
+                group.append(drupyter.snap.circle(cx - halfWidth, cy + halfHeight, 5).attr(attr).addClass("endPoint left-down sub"));
+                group.append(drupyter.snap.circle(cx + halfWidth, cy - halfHeight, 5).attr(attr).addClass("endPoint right-up sub"));
+                group.append(drupyter.snap.circle(cx + halfWidth, cy + halfHeight, 5).attr(attr).addClass("endPoint right-down sub"));
                 // var group = drupyter.snap.group(circle, upEndPoint, downEndPoint, leftEndPoint, rightEndPoint);
                 // console.log(group);
                 drupyter.registerAndDecorateElement(group);
