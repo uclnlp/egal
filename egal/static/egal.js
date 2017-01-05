@@ -636,8 +636,6 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         };
 
 
-
-
         this.onDragCore = function (dx, dy, x, y, event, core) {
             var parent = core.parent();
             // console.log(core);
@@ -737,6 +735,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         var line = null;
         this.arrow = false;
+        var elem2lineN1 = {};
+        var elem2lineN2 = {};
 
         this.onClick = function (e, element) {
             // console.log("Paper clicked!");
@@ -766,10 +766,17 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             // console.log(elem);
             // console.log(elem.paper.selectAll("[data-n1='" + elem.attr("id") + "'"));
 
-            elem.paper.selectAll("[data-n1='" + elem.attr("id") + "'").forEach(function (connector) {
+            // elem.paper.selectAll("[data-n1='" + elem.attr("id") + "'").forEach(function (connector) {
+            //     connector.attr({x1: bbox.cx, y1: bbox.cy})
+            // });
+            // elem.paper.selectAll("[data-n2='" + elem.attr("id") + "'").forEach(function (connector) {
+            //     connector.attr({x2: bbox.cx, y2: bbox.cy})
+            // });
+
+            $.each(elem2lineN1[elem.attr("id")], function(index, connector) {
                 connector.attr({x1: bbox.cx, y1: bbox.cy})
             });
-            elem.paper.selectAll("[data-n2='" + elem.attr("id") + "'").forEach(function (connector) {
+            $.each(elem2lineN2[elem.attr("id")], function(index, connector) {
                 connector.attr({x2: bbox.cx, y2: bbox.cy})
             });
 
@@ -823,7 +830,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             if (!line) {
                 line = drupyter.snap.line(bbox.cx, bbox.cy, bbox.cx, bbox.cy).attr({
                     stroke: '#000',
-                }).addClass("drupElem");
+                }).addClass("drupElem connector");
                 line.attr("data-n1", endPoint.attr("id"));
                 if (this.arrow) {
                     line.attr({"marker-end": drupyter.marker});
@@ -842,6 +849,16 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 var group = drupyter.snap.g(line);
                 drupyter.registerAndDecorateElement(group);
 
+                var id1 = line.attr("data-n1");
+                var id2 = line.attr("data-n2");
+
+                if (!elem2lineN1[id1]) elem2lineN1[id1] = [];
+                if (!elem2lineN2[id2]) elem2lineN2[id2] = [];
+
+                elem2lineN1[id1].push(line);
+                elem2lineN2[id2].push(line);
+
+
                 line = null
             }
         };
@@ -850,6 +867,16 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         };
 
         this.loadConnectors = function () {
+            drupyter.snap.selectAll(".connector").forEach(function (line) {
+                var id1 = line.attr("data-n1");
+                var id2 = line.attr("data-n2");
+                if (!elem2lineN1[id1]) elem2lineN1[id1] = [];
+                if (!elem2lineN2[id2]) elem2lineN2[id2] = [];
+
+                elem2lineN1[id1].push(line);
+                elem2lineN2[id2].push(line);
+            });
+
         };
 
         this.clear = function () {
