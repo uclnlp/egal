@@ -2,6 +2,11 @@ function trimPX(string) {
     return string.substring(0, string.length - 2);
 }
 
+function appendToList(dict, key, value) {
+    if (!dict[key]) dict[key] = [];
+    dict[key].push(value)
+}
+
 define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTxt) {
 
     // http://svg.dabbles.info/snaptut-freetransform-vb3.js
@@ -365,7 +370,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 var cy = Number(circle.attr('cy'));
                 var radius = Number(circle.attr('r'));
                 var attr = {stroke: "#000", strokeWidth: 1, fill: '#fff', opacity: 0.0}; //fillOpacity: 0
-                circle.addClass("core");
+                circle.addClass("core alignable");
                 var group = drupyter.snap.group(circle);
                 group.append(drupyter.snap.circle(cx, cy - radius, 5).attr(attr).addClass("endPoint up sub"));
                 group.append(drupyter.snap.circle(cx, cy + radius, 5).attr(attr).addClass("endPoint down sub"));
@@ -423,6 +428,12 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         var dragging = false;
         var dragged = false;
         var self = this;
+        var y2Bboxes = {};
+        var y1Bboxes = {};
+        var x2Bboxes = {};
+        var x1Bboxes = {};
+        var widthBboxes = {};
+        var heightBboxes = {};
 
         this.onSelect = function (listener) {
             listeners.push(listener)
@@ -433,15 +444,6 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         };
 
         this.onClickElement = function (e, element) {
-            // console.log("OnClick");
-            // console.log(dragged);
-            // if (!dragged) this.selectElement(element);
-            // else {
-            //     dragged = false;
-            // }
-            // if (currentSelection) {
-            //     currentSelection = null
-            // }
             this.selectElement(element);
         };
         this.onDblClickElement = function (e, element) {
@@ -468,12 +470,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
 
         this.onClickBackground = function (e, element) {
-            console.log("OnClick Paper");
-            // console.log(dragged);
-            // if (!dragged) this.selectElement(element);
-            // else {
-            //     dragged = false;
-            // }
+            // console.log("OnClick Paper");
             this.selectElement(null);
         };
 
@@ -505,7 +502,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         };
 
         this.createSelectionHandles = function (elem) {
-            var bbox = elem.select(".core").getBBox();
+            var core = elem.select(".core");
+            var bbox = core.getBBox();
             var handleSize = 6;
             var handleAttr = {
                 fill: "white",
@@ -563,7 +561,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                             "S" + scale_x + "," + scale_y + "," + fixed_x + "," + fixed_y);
                         // console.log(selectionBox.data("orig_transform") +
                         //     "S" + scale_x + "," + scale_y + "," + fixed_x + "," + fixed_y);
-                        elem.select(".core").transform(elem.select(".core").data("orig_transform") +
+                        var core = elem.select(".core");
+                        core.transform(core.data("orig_transform") +
                             "S" + scale_x + "," + scale_y + "," + fixed_x + "," + fixed_y);
 
                         elem.selectAll("*").forEach(function (e) {
@@ -575,6 +574,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                         //scale and move selectionBox
                         //move label and end points
                         //scale core
+                        drawAlignables(core.getBBox());
+
 
                     },
                     function (x, y, event) {
@@ -594,10 +595,12 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                             sub.data("x", sub.getBBox().cx);
                             sub.data("y", sub.getBBox().cy);
                         });
+                        cacheAlignables(core);
+
 
                     },
                     function (x, y, event) {
-
+                        self.selectElement(elem)
                     }
                 )
             }
@@ -637,11 +640,9 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
 
         this.onDragCore = function (dx, dy, x, y, event, core) {
+            // if (x % 1 != 0 || y % 1 != 0) return;
             var parent = core.parent();
-            // console.log(core);
-            // console.log(core.parent());
             core.transform(core.data("orig_transform") + "T" + dx + "," + dy);
-            // console.log(parent.selectAll(".endPoint"));
             parent.selectAll(".endPoint").forEach(function (ep) {
                 ep.transform(ep.data("orig_transform") + "T" + dx + "," + dy);
                 $.each(moveListeners, function (index, listener) {
@@ -660,10 +661,11 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             $.each(moveListeners, function (index, listener) {
                 listener(core);
             });
+            var bbox = core.getBBox();
+            // console.log(bbox);
+            // console.log(y1Bboxes);
+            drawAlignables(bbox);
 
-            //             listener(self.currentSelection);
-            //             //todo: this should also call the move/change listeners on all sub-elements
-            //         });
 
         };
         this.onDragCoreStart = function (x, y, event, core) {
@@ -681,9 +683,75 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 h.data("orig_transform", h.transform().globalMatrix.toTransformString())
             });
 
-
             dragging = true;
+
+            cacheAlignables(core);
         };
+
+        function drawAlignables(bbox) {
+            $(drupyter.snap.node).find(".align-line").remove();
+
+            var alignLineAttr = {stroke: "lightblue", "stroke-dasharray": "5, 5"};
+
+            function createAlignLine(x1, y1, x2, y2, attr) {
+                var line = drupyter.snap.line(x1.toFixed(0), y1.toFixed(0), x2.toFixed(0), y2.toFixed(0))
+                    .attr(attr)
+                    .addClass("align-line selection_artifact");
+                drupyter.snap.prepend(line);
+            }
+
+            $.each(y2Bboxes[bbox.y2.toFixed(0)], function (index, otherBbox) {
+                createAlignLine(bbox.cx, bbox.y2, otherBbox.cx, bbox.y2, alignLineAttr)
+            });
+            $.each(y1Bboxes[bbox.y.toFixed(0)], function (index, otherBbox) {
+                createAlignLine(bbox.cx, bbox.y, otherBbox.cx, bbox.y, alignLineAttr)
+            });
+            // console.log(x1Bboxes);
+            $.each(x1Bboxes[bbox.x.toFixed(0)], function (index, otherBbox) {
+                createAlignLine(bbox.x, bbox.cy, bbox.x, otherBbox.cy, alignLineAttr)
+            });
+            $.each(x2Bboxes[bbox.x2.toFixed(0)], function (index, otherBbox) {
+                createAlignLine(bbox.x2, bbox.cy, bbox.x2, otherBbox.cy, alignLineAttr)
+            });
+
+            console.log(widthBboxes);
+            console.log(bbox.width.toFixed(0));
+            var dimLineAttr = {stroke: "lightblue"};
+            $.each(widthBboxes[bbox.width.toFixed(0)], function (index, otherBbox) {
+                createAlignLine(otherBbox.x, otherBbox.y - 10, otherBbox.x2, otherBbox.y - 10, dimLineAttr);
+                createAlignLine(otherBbox.x, otherBbox.y - 15, otherBbox.x, otherBbox.y - 5, dimLineAttr);
+                createAlignLine(otherBbox.x2, otherBbox.y - 15, otherBbox.x2, otherBbox.y - 5, dimLineAttr);
+            });
+            $.each(heightBboxes[bbox.height.toFixed(0)], function (index, otherBbox) {
+                createAlignLine(otherBbox.x - 10, otherBbox.y, otherBbox.x - 10, otherBbox.y2, dimLineAttr);
+                createAlignLine(otherBbox.x - 5, otherBbox.y, otherBbox.x - 15, otherBbox.y, dimLineAttr);
+                createAlignLine(otherBbox.x - 5, otherBbox.y2, otherBbox.x - 15, otherBbox.y2, dimLineAttr);
+            });
+
+        }
+
+        function cacheAlignables(ignore) {
+            //collect all core bounding boxes and index by different points
+            y2Bboxes = {};
+            y1Bboxes = {};
+            x1Bboxes = {};
+            x2Bboxes = {};
+            widthBboxes = {};
+            heightBboxes = {};
+            drupyter.snap.selectAll(".alignable").forEach(function (otherCore) {
+                if (ignore != otherCore) {
+                    var bbox = otherCore.getBBox();
+                    appendToList(y2Bboxes, bbox.y2.toFixed(0), bbox);
+                    appendToList(y1Bboxes, bbox.y.toFixed(0), bbox);
+                    appendToList(x2Bboxes, bbox.x2.toFixed(0), bbox);
+                    appendToList(x1Bboxes, bbox.x.toFixed(0), bbox);
+                    appendToList(widthBboxes, bbox.width.toFixed(0), bbox);
+                    appendToList(heightBboxes, bbox.height.toFixed(0), bbox);
+                }
+            });
+
+        }
+
         this.onDragCoreEnd = function (x, y, event, core) {
             // var parent = core.parent();
             // parent.selectAll(".endPoint").forEach(function (endPoint) {
@@ -773,10 +841,10 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             //     connector.attr({x2: bbox.cx, y2: bbox.cy})
             // });
 
-            $.each(elem2lineN1[elem.attr("id")], function(index, connector) {
+            $.each(elem2lineN1[elem.attr("id")], function (index, connector) {
                 connector.attr({x1: bbox.cx, y1: bbox.cy})
             });
-            $.each(elem2lineN2[elem.attr("id")], function(index, connector) {
+            $.each(elem2lineN2[elem.attr("id")], function (index, connector) {
                 connector.attr({x2: bbox.cx, y2: bbox.cy})
             });
 
@@ -1066,7 +1134,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 var halfWidth = bbox.width / 2.0;
                 var halfHeight = bbox.height / 2.0;
                 var attr = {stroke: "#000", strokeWidth: 1, fill: '#fff', opacity: 0.0}; //fillOpacity: 0
-                rect.addClass("core");
+                rect.addClass("core alignable");
                 var group = drupyter.snap.group(rect);
                 group.append(drupyter.snap.circle(cx, cy - halfHeight, 5).attr(attr).addClass("endPoint up sub"));
                 group.append(drupyter.snap.circle(cx, cy + halfHeight, 5).attr(attr).addClass("endPoint down sub"));
