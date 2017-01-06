@@ -589,7 +589,9 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
                     },
                     function (x, y, event) {
-                        self.selectElement(elem)
+                        removeAlignLines();
+
+                        // self.selectElement(elem)
                     }
                 )
             }
@@ -679,6 +681,11 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             cacheAlignables(core);
         };
 
+        function removeAlignLines() {
+            $(drupyter.snap.node).find(".align-line").remove();
+
+        }
+
         function drawAlignables(bbox) {
             $(drupyter.snap.node).find(".align-line").remove();
 
@@ -752,6 +759,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             // parent.selectAll(".endPoint").forEach(function (endPoint) {
             //     endPoint.attr({opacity: 0.0})
             // });
+            // self.selectElement()
+            removeAlignLines();
             dragging = false;
             dragged = true;
         };
