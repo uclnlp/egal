@@ -114,6 +114,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             // $(self.svg).empty();
             // $(self.drawing + ">div").remove();
             $(self.snap.node).find(".drupElem").remove();
+            self.selectionContext.selectElement(null);
             self.connectContext.clear();
             self.currentId = 0;
         });
@@ -143,18 +144,6 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         $("#toBack").click(function () {
             self.selectionContext.moveToBack();
         });
-
-        $("#clear").click(function () {
-            $(self.svg).empty();
-            $(self.drawing + ">div").remove();
-            self.connectContext.clear();
-            self.currentId = 0;
-
-        });
-        $("#save").click(function () {
-            self.saveCurrentSVG();
-        });
-
 
         $(self.container + " .wi").change(function () {
             // var snapSelection = new Snap(self.selectionContext.currentSelection);
@@ -244,7 +233,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 'font-size': 20,
                 "text-anchor": "middle",
                 "alignment-baseline": "central",
-                text: "&#8202;",
+                text: "|",
                 opacity: 0.0,
             });
             elem.append(label);
@@ -445,20 +434,19 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         };
 
         this.onClickElement = function (e, element) {
-            this.selectElement(element);
         };
         this.onDblClickElement = function (e, element) {
             console.log("OnDblClick");
             var bbox = element.getBBox();
             var label = element.select(".label");
-            var init = label.attr("text") === "&#8202;" ? "" : label.attr("text")
+            var init = label.attr("text") === "|" ? "" : label.attr("text")
             createForeignTextInput(element, bbox.cx - (bbox.width - 20) / 2, bbox.cy - 15, bbox.width - 20, 20,
                 init, 20,
                 function (textVal) {
                     label.attr({
                         // "text-anchor": "middle",
                         // "alignment-baseline": "central",
-                        text: textVal === "" ? "&#8202;" : textVal,
+                        text: textVal === "" ? "|" : textVal,
                         opacity: textVal === "" ? 0.0 : 1.0
                     });
                     var labelBbox = label.getBBox();
@@ -722,11 +710,17 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 createAlignLine(otherBbox.x, otherBbox.y - 10, otherBbox.x2, otherBbox.y - 10, dimLineAttr);
                 createAlignLine(otherBbox.x, otherBbox.y - 15, otherBbox.x, otherBbox.y - 5, dimLineAttr);
                 createAlignLine(otherBbox.x2, otherBbox.y - 15, otherBbox.x2, otherBbox.y - 5, dimLineAttr);
+                createAlignLine(bbox.x, bbox.y - 10, bbox.x2, bbox.y - 10, dimLineAttr);
+                createAlignLine(bbox.x, bbox.y - 15, bbox.x, bbox.y - 5, dimLineAttr);
+                createAlignLine(bbox.x2, bbox.y - 15, bbox.x2, bbox.y - 5, dimLineAttr);
             });
             $.each(heightBboxes[bbox.height.toFixed(0)], function (index, otherBbox) {
                 createAlignLine(otherBbox.x - 10, otherBbox.y, otherBbox.x - 10, otherBbox.y2, dimLineAttr);
                 createAlignLine(otherBbox.x - 5, otherBbox.y, otherBbox.x - 15, otherBbox.y, dimLineAttr);
                 createAlignLine(otherBbox.x - 5, otherBbox.y2, otherBbox.x - 15, otherBbox.y2, dimLineAttr);
+                createAlignLine(bbox.x - 10, bbox.y, bbox.x - 10, bbox.y2, dimLineAttr);
+                createAlignLine(bbox.x - 5, bbox.y, bbox.x - 15, bbox.y, dimLineAttr);
+                createAlignLine(bbox.x - 5, bbox.y2, bbox.x - 15, bbox.y2, dimLineAttr);
             });
 
         }
