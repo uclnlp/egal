@@ -44,6 +44,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 console.log("Button Clicked!");
                 $(self.container + " .egal-menu li").removeClass("active");
                 $(selector).addClass("active");
+                self.selectionContext.selectElement(null);
                 update && update();
 
             })
@@ -243,7 +244,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 'font-size': 20,
                 "text-anchor": "middle",
                 "alignment-baseline": "central",
-                text: "&nbsp;",
+                text: "&#8202;",
                 opacity: 0.0,
             });
             elem.append(label);
@@ -450,14 +451,14 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             console.log("OnDblClick");
             var bbox = element.getBBox();
             var label = element.select(".label");
-            var init = label.attr("text") === "&nbsp;" ? "" : label.attr("text")
+            var init = label.attr("text") === "&#8202;" ? "" : label.attr("text")
             createForeignTextInput(element, bbox.cx - (bbox.width - 20) / 2, bbox.cy - 15, bbox.width - 20, 20,
                 init, 20,
                 function (textVal) {
                     label.attr({
                         // "text-anchor": "middle",
                         // "alignment-baseline": "central",
-                        text: textVal === "" ? "&nbsp;" : textVal,
+                        text: textVal === "" ? "&#8202;" : textVal,
                         opacity: textVal === "" ? 0.0 : 1.0
                     });
                     var labelBbox = label.getBBox();
@@ -629,7 +630,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             this.currentSelection = elem;
             if (elem) {
                 elem.select(".core").attr({filter: drupyter.filter}).addClass("egal-select");
-                this.createSelectionHandles(elem);
+                if (!elem.select(".core").hasClass("connector"))
+                    this.createSelectionHandles(elem);
                 // elem.append(selectionBox);
             }
             $.each(listeners, function (index, value) {
@@ -640,6 +642,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
 
         this.onDragCore = function (dx, dy, x, y, event, core) {
+            if (core.hasClass("connector")) return;
             // if (x % 1 != 0 || y % 1 != 0) return;
             var parent = core.parent();
             core.transform(core.data("orig_transform") + "T" + dx + "," + dy);
@@ -714,8 +717,6 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 createAlignLine(bbox.x2, bbox.cy, bbox.x2, otherBbox.cy, alignLineAttr)
             });
 
-            console.log(widthBboxes);
-            console.log(bbox.width.toFixed(0));
             var dimLineAttr = {stroke: "lightblue"};
             $.each(widthBboxes[bbox.width.toFixed(0)], function (index, otherBbox) {
                 createAlignLine(otherBbox.x, otherBbox.y - 10, otherBbox.x2, otherBbox.y - 10, dimLineAttr);
@@ -823,11 +824,6 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             //     drupyter.selectionContext.selectElement(line.node);
             // }
         };
-
-        // this.onClickElement = function (e, element) {
-        //
-        //     // console.log("Clicked " + element);
-        // };
 
         drupyter.selectionContext.onMove(function (elem) {
             var bbox = elem.getBBox();
