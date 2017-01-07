@@ -249,22 +249,45 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         };
 
         this.convertLatex = function (selector) {
-            var tmpLatex = self.jcontainer.append("<div class='temp-latex'></div>");
+            var tmpLatex = $("<div class='temp-latex'></div>").appendTo(self.jcontainer);
             // collect all text elements and create sub divs
+            var div2text = {};
             selector.each(function (i, text) {
                 // console.log(text);
                 var source = text.getAttribute("data-src");
-                tmpLatex.append("<div class='temp-latex-text'>" + source + "</div>")
+                var id = 'egal-latex' + i;
+                var div = $("<div class='temp-latex-text' id='" + id + "'>" + source + "</div>").appendTo(tmpLatex);
+                div2text[id] = text;
             });
             // console.log("What");
             // console.log(tmpLatex.children()[0]);
             //
-            // MathJax.Hub.Queue(
-            //     ["Typeset", MathJax.Hub, tmpLatex[0]],
-            //     function () {
-            //         console.log("Done!");
-            //     }
-            // );
+            MathJax.Hub.Queue(
+                ["Typeset", MathJax.Hub, tmpLatex[0]],
+                function () {
+                    tmpLatex.find("svg").each(function (i, mj) {
+                        console.log(mj);
+                        var jmj = $(mj);
+                        var text = div2text[mj.parentNode.parentNode.parentNode.id];
+                        var bbox = new Snap(text).getBBox();
+                        // var foreign = $(createForeignInput(
+                        //     bbox.cx - (jmj.width() / 2),
+                        //     bbox.cy - (jmj.height() / 2), jmj.width(), jmj.height()));
+                        // foreign.append(mj);
+                        var group = drupyter.snap.group(new Snap(mj));// );
+                        var gbbox = group.getBBox();
+                        group.addClass("sub mathjax_text");
+                        group.attr("data-src", text.getAttribute("data-src"));
+                        group.transform("t" + (bbox.cx - gbbox.width / 2) + "," + (bbox.cy - gbbox.height / 2));
+                        console.log(text);
+                        console.log($(text).parent());
+                        new $(text).replaceWith(group.node);
+
+                    });
+                    tmpLatex.remove();
+                    // console.log("Done!");
+                }
+            );
             //Call MathJax.Hub.Queue(["Typeset",..], copy)
             //where copy is a function that takes the converted div texts and inserts them into the svg text
         };
@@ -287,7 +310,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             self.arrow = self.snap.polygon([0, 0, 0, 6, 9, 3, 0, 0]).attr({fill: '#323232'});//.transform('r90');
             self.marker = self.arrow.marker(0, 0, 10, 10, 9, 3);
 
-            self.convertLatex(self.jsvg.find("text"));
+            // self.convertLatex(self.jsvg.find("text"));
 
             // self.activateElement($(self.svg).find("*"));
             var elements = self.snap.selectAll(".drupElem");
@@ -365,7 +388,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             var cloned = $(self.drawing).clone();
             cloned.find(".transient").remove();
             cloned.find("#egal_background").remove();
-            cloned.find(".egal-select").attr({filter: null});
+            cloned.find(".egal-select .core").css({filter: ''});
             self.saveContent(cloned.html());
         };
 
@@ -386,7 +409,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 var cy = Number(circle.attr('cy'));
                 var radius = Number(circle.attr('r'));
                 var attr = {stroke: "#000", strokeWidth: 1, fill: '#fff', opacity: 0.0}; //fillOpacity: 0
-                circle.addClass("core alignable");
+                circle.addClass("core alignable sub");
                 var group = drupyter.snap.group(circle);
                 group.append(drupyter.snap.circle(cx, cy - radius, 5).attr(attr).addClass("endPoint up sub"));
                 group.append(drupyter.snap.circle(cx, cy + radius, 5).attr(attr).addClass("endPoint down sub"));
@@ -625,7 +648,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                             // console.log(h.data("orig_transform") + "t" +
                             //     (new_pos.x - h.data("hx")).toFixed(4) + "," + (new_pos.y - h.data("hy")).toFixed(4));
                         });
-                        drupyter.snap.selectAll(".egal-select *").forEach(function (h) {
+                        drupyter.snap.selectAll(".egal-select .sub").forEach(function (h) {
                             var new_pos = newPosition(h.data("x"), h.data("y"));
                             h.transform(h.data("orig_transform") + "t" +
                                 (new_pos.x - h.data("x")).toFixed(4) + "," + (new_pos.y - h.data("y")).toFixed(4));
@@ -642,7 +665,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                                 "S" + scale_x + "," + scale_y + "," + fixed_x + "," + fixed_y);
                         });
 
-                        drupyter.snap.selectAll(".egal-select *").forEach(function (e) {
+                        drupyter.snap.selectAll(".egal-select .sub").forEach(function (e) {
                             $.each(moveListeners, function (index, listener) {
                                 listener(e);
                             });
@@ -668,7 +691,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                             h.data("orig_transform", h.transform().globalMatrix.toTransformString())
                         });
                         // console.log(elem.selectAll("*"));
-                        drupyter.snap.selectAll(".egal-select *").forEach(function (sub) {
+                        drupyter.snap.selectAll(".egal-select .sub").forEach(function (sub) {
                             sub.data("orig_transform", sub.transform().globalMatrix.toTransformString());
                             sub.data("x", sub.getBBox().cx);
                             sub.data("y", sub.getBBox().cy);
@@ -757,7 +780,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             // console.log("dragging");
             dragging = true;
             if (core.hasClass("connector")) return;
-            drupyter.snap.selectAll(".egal-select *").forEach(function (ep) {
+            drupyter.snap.selectAll(".egal-select .sub").forEach(function (ep) {
                 ep.transform(ep.data("orig_transform") + "T" + dx + "," + dy);
                 $.each(moveListeners, function (index, listener) {
                     listener(ep);
@@ -785,7 +808,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             //     if (this.currentSelection.indexOf(parent) == -1)
             //         this.selectElement(parent);
             // }
-            drupyter.snap.selectAll(".egal-select *").forEach(function (ep) {
+            drupyter.snap.selectAll(".egal-select .sub").forEach(function (ep) {
                 ep.data("orig_transform", ep.transform().globalMatrix.toTransformString());
             });
             // core.data("orig_transform", core.transform().globalMatrix.toTransformString());
@@ -1150,13 +1173,18 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
     }
 
-    function createForeignTextInput(parent, x, y, width, height, init, fontSize, acceptFunction) {
+    function createForeignInput(x, y, width, height) {
         var svgns = "http://www.w3.org/2000/svg";
         var field = document.createElementNS(svgns, "foreignObject");
         field.setAttributeNS(null, "x", x);
         field.setAttributeNS(null, "y", y);
         field.setAttributeNS(null, "width", width);
         field.setAttributeNS(null, "height", height);
+        return field;
+    }
+
+    function createForeignTextInput(parent, x, y, width, height, init, fontSize, acceptFunction) {
+        var field = createForeignInput(x, y, width, height);
         var textInput = $("<input type='text' style='font-size: " + fontSize + "px;width: " + width + "px; text-align: center'>");
         var removed = false;
         textInput.val(init);
@@ -1199,7 +1227,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             var offset = $(element.node).offset();
             var x = e.pageX - offset.left;
             var y = e.pageY - offset.top;
-            text = drupyter.snap.text(x, y, "").addClass("core alignable");
+            text = drupyter.snap.text(x, y, "").addClass("core alignable sub");
             var textGroup = drupyter.snap.group(text);
             drupyter.registerAndDecorateElement(textGroup);
             if (field) field.saveRemove();
@@ -1233,7 +1261,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 var halfWidth = bbox.width / 2.0;
                 var halfHeight = bbox.height / 2.0;
                 var attr = {stroke: "#000", strokeWidth: 1, fill: '#fff', opacity: 0.0}; //fillOpacity: 0
-                rect.addClass("core alignable");
+                rect.addClass("core alignable sub");
                 var group = drupyter.snap.group(rect);
                 group.append(drupyter.snap.circle(cx, cy - halfHeight, 5).attr(attr).addClass("endPoint up sub"));
                 group.append(drupyter.snap.circle(cx, cy + halfHeight, 5).attr(attr).addClass("endPoint down sub"));
