@@ -19,6 +19,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         this.drawing = container + ' div.drawing';
         this.svg = this.drawing + ' svg';
         this.jsvg = null;
+        this.jcontainer = $(this.container);
         this.menuSVG = container + ' div.menu svg';
         this.currentId = 0;
         this.menuBarListeners = [];
@@ -234,6 +235,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 "alignment-baseline": "central",
                 text: "|",
                 opacity: 0.0,
+                "data-src": "",
             });
             elem.append(label);
         };
@@ -244,6 +246,27 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 endPoint.attr({id: elem.attr("id") + "_endpoint_" + index})
             });
             this.activateElement(elem);
+        };
+
+        this.convertLatex = function (selector) {
+            var tmpLatex = self.jcontainer.append("<div class='temp-latex'></div>");
+            // collect all text elements and create sub divs
+            selector.each(function (i, text) {
+                // console.log(text);
+                var source = text.getAttribute("data-src");
+                tmpLatex.append("<div class='temp-latex-text'>" + source + "</div>")
+            });
+            // console.log("What");
+            // console.log(tmpLatex.children()[0]);
+            //
+            // MathJax.Hub.Queue(
+            //     ["Typeset", MathJax.Hub, tmpLatex[0]],
+            //     function () {
+            //         console.log("Done!");
+            //     }
+            // );
+            //Call MathJax.Hub.Queue(["Typeset",..], copy)
+            //where copy is a function that takes the converted div texts and inserts them into the svg text
         };
 
 
@@ -263,6 +286,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
             self.arrow = self.snap.polygon([0, 0, 0, 6, 9, 3, 0, 0]).attr({fill: '#323232'});//.transform('r90');
             self.marker = self.arrow.marker(0, 0, 10, 10, 9, 3);
+
+            self.convertLatex(self.jsvg.find("text"));
 
             // self.activateElement($(self.svg).find("*"));
             var elements = self.snap.selectAll(".drupElem");
@@ -343,6 +368,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             cloned.find(".egal-select").attr({filter: null});
             self.saveContent(cloned.html());
         };
+
 
     }
 
@@ -448,7 +474,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                         // "text-anchor": "middle",
                         // "alignment-baseline": "central",
                         text: textVal === "" ? "|" : textVal,
-                        opacity: textVal === "" ? 0.0 : 1.0
+                        opacity: textVal === "" ? 0.0 : 1.0,
+                        "data-src": textVal
                     });
                     var labelBbox = label.getBBox();
                     label.attr({
@@ -466,28 +493,34 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         this.cutSelection = function () {
             if (this.currentSelection) {
-                this.currentSelection.selectAll(".endPoint").forEach(function (ep) {
+                drupyter.snap.selectAll(".egal-select .endPoint").forEach(function (ep) {
                     // console.log(drupyter.svg + " [data-n1='" + ep.attr("id") + "']");
                     $(drupyter.svg + " [data-n1='" + ep.attr("id") + "']").remove();
                     $(drupyter.svg + " [data-n2='" + ep.attr("id") + "']").remove();
                 });
-                this.currentSelection.remove();
+                drupyter.snap.selectAll(".egal-select").remove();
                 this.selectElement(null);
             }
         };
 
         this.pasteSelection = function () {
-            if (this.currentSelection) {
-                var cloned = this.currentSelection.clone();
-                // $(cloned.node).find("*").unbind();
-                cloned.selectAll("*").forEach(function (e) {
-                    // e.removeData();
-                    e.transform(e.transform().globalMatrix.toTransformString() + "T10,10");
-                    e.paper = self.currentSelection.paper;
+            if (this.currentSelection.length > 0) {
+                console.log("Yo!");
+                var created = [];
+                $.each(this.currentSelection, function (i, elem) {
+                    console.log(elem);
+                    var cloned = elem.clone();
+                    // $(cloned.node).find("*").unbind();
+                    cloned.selectAll("*").forEach(function (e) {
+                        // e.removeData();
+                        e.transform(e.transform().globalMatrix.toTransformString() + "T10,10");
+                        e.paper = drupyter.snap;
+                    });
+                    created.push(cloned);
+                    // console.log(cloned.parent());
+                    drupyter.registerElement(cloned);
                 });
-                // console.log(cloned.parent());
-                drupyter.registerElement(cloned);
-                this.selectElement(cloned);
+                self.selectElements(created);
             }
         };
 
@@ -671,11 +704,26 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             }
             elem.toggleClass("egal-select");
             self.createSelectionHandles();
-            $.each(listeners, function (i,l) {
+            $.each(listeners, function (i, l) {
                 l(elem);
             });
 
             // drupyter.jsvg.find(".egal-select .core").attr({filter: "url(#" + drupyter.filter.attr("id") + ")"});
+        };
+
+        this.selectElements = function (elems) {
+            this.currentSelection = elems;
+            drupyter.jsvg.find(".egal-select .core").css({filter: ''});
+            drupyter.jsvg.find(".egal-select").removeClass("egal-select");
+            $.each(elems, function (i, elem) {
+                elem.addClass("egal-select");
+                elem.select(".core").attr({filter: "url(#" + drupyter.filter.attr("id") + ")"});
+                $.each(listeners, function (i, l) {
+                    l(elem);
+                });
+
+            });
+            self.createSelectionHandles();
         };
 
         this.selectElement = function (elem) {
@@ -693,7 +741,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 this.currentSelection = [];
             }
             self.createSelectionHandles();
-            $.each(listeners, function (i,l) {
+            $.each(listeners, function (i, l) {
                 l(elem);
             });
 
@@ -1238,10 +1286,11 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         this.onClickElement = function (e, element) {
             // console.log("Selected in MakeCircle Mode");
-        }
+        };
 
 
     }
+
 
     return {
         Egal: Egal
