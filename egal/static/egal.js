@@ -498,7 +498,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                     $(drupyter.svg + " [data-n1='" + ep.attr("id") + "']").remove();
                     $(drupyter.svg + " [data-n2='" + ep.attr("id") + "']").remove();
                 });
-                drupyter.snap.selectAll(".egal-select").remove();
+                this.currentSelection.remove();
                 this.selectElement(null);
             }
         };
@@ -575,13 +575,19 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 handle.drag(
                     function (dx, dy, x, y, event) {
                         // console.log("Dragging...");
+                        var fixed_x = handle.data("hx") - 2 * (handle.data("hx") - handle.data("sx"));
+                        var fixed_y = handle.data("hy") - 2 * (handle.data("hy") - handle.data("sy"));
+
                         if (event.shiftKey) {
                             //project point to diagonals
-                            var target_x = handle.hasClass("east") ? 1 : -1;
-                            var target_y = handle.hasClass("north") ? -1 : 1;
-                            var scale = (dx * target_x + dy * target_y) / Math.sqrt(target_x * target_x + target_y * target_y);
-                            dx = scale * target_x;
-                            dy = scale * target_y;
+                            var target_x = handle.data("hx") - fixed_x;
+                            var target_y = handle.data("hy") - fixed_y;
+                            // var target_x = handle.hasClass("east") ? 1 : -1;
+                            // var target_y = handle.hasClass("north") ? -1 : 1;
+                            var norm = Math.sqrt(target_x * target_x + target_y * target_y);
+                            var scale = (dx * target_x + dy * target_y) / norm;
+                            dx = scale * target_x / norm;
+                            dy = scale * target_y / norm;
                             // var hasNorth = handle.hasClass("north") ? 1 : 0;
                             // var hasEast = handle.hasClass("east") ? 1 : 0;
                             // dx = hasNorth * hasEast * sign_x * sign_y * max_d * x_bigger_y;
@@ -598,8 +604,6 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
                         }
 
-                        var fixed_x = handle.data("hx") - 2 * (handle.data("hx") - handle.data("sx"));
-                        var fixed_y = handle.data("hy") - 2 * (handle.data("hy") - handle.data("sy"));
 
                         function newPosition(x, y) {
                             return {x: newX(x), y: newY(y)};
