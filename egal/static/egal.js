@@ -147,16 +147,14 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         });
 
         $(self.container + " .wi").change(function () {
-            // var snapSelection = new Snap(self.selectionContext.currentSelection);
-            self.selectionContext.currentSelection.select(".core").attr({strokeWidth: $(self.container + " .wi").val()})
+            self.jsvg.find(".egal-select .core").css({strokeWidth: $(self.container + " .wi").val()});
         });
         $(self.container + " .fg").change(function () {
-            // var snapSelection = new Snap(self.selectionContext.currentSelection);
-            self.selectionContext.currentSelection.select(".core").attr({stroke: $(self.container + " .fg").val()})
+            self.jsvg.find(".egal-select .core").attr({fill: $(self.container + " .bg").val()});
         });
         $(self.container + " .bg").change(function () {
             // var snapSelection = new Snap(self.selectionContext.currentSelection);
-            self.selectionContext.currentSelection.select(".core").attr({fill: $(self.container + " .bg").val()})
+            self.jsvg.find(".egal-select .core").attr({fill: $(self.container + " .bg").val()});
         });
         $(self.container + " .height").change(function () {
             self.snap.attr({height: $(self.container + " .height").val()})
@@ -544,6 +542,29 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 handle.drag(
                     function (dx, dy, x, y, event) {
                         // console.log("Dragging...");
+                        if (event.shiftKey) {
+                            //project point to diagonals
+                            var target_x = handle.hasClass("east") ? 1 : -1;
+                            var target_y = handle.hasClass("north") ? -1 : 1;
+                            var scale = (dx * target_x + dy * target_y) / Math.sqrt(target_x * target_x + target_y * target_y);
+                            dx = scale * target_x;
+                            dy = scale * target_y;
+                            // var hasNorth = handle.hasClass("north") ? 1 : 0;
+                            // var hasEast = handle.hasClass("east") ? 1 : 0;
+                            // dx = hasNorth * hasEast * sign_x * sign_y * max_d * x_bigger_y;
+                            // dy = -hasNorth * hasEast * sign_y * sign_y * max_d * x_bigger_y;
+                            // // dx = dy = max_d;
+                            // if (handle.hasClass("east")) {
+                            //     dx = sign_x * max_d * hasNorth;
+                            //     dy = sign_y * max_d * hasNorth;
+                            // }
+                            // if (handle.hasClass("west")) {
+                            //     dx = sign_x * sign_y * max_d;
+                            //     dy = sign_x * sign_y * (handle.hasClass("north") ? -max_d : max_d);
+                            // }
+
+                        }
+
                         var fixed_x = handle.data("hx") - 2 * (handle.data("hx") - handle.data("sx"));
                         var fixed_y = handle.data("hy") - 2 * (handle.data("hy") - handle.data("sy"));
 
@@ -650,18 +671,14 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             }
             elem.toggleClass("egal-select");
             self.createSelectionHandles();
+            $.each(listeners, function (i,l) {
+                l(elem);
+            });
 
             // drupyter.jsvg.find(".egal-select .core").attr({filter: "url(#" + drupyter.filter.attr("id") + ")"});
         };
 
         this.selectElement = function (elem) {
-            // console.log(this.listeners);
-            // if (this.currentSelection.length > 0) {
-            //     this.currentSelection.select(".core").attr({filter: null});
-            //     this.currentSelection.select(".core").removeClass("egal-select");
-            //     $(drupyter.svg + " .selection_artifact").remove();
-            //
-            // }
             drupyter.jsvg.find(".egal-select .core").css({filter: ''});
             drupyter.jsvg.find(".egal-select").removeClass("egal-select");
 
@@ -675,16 +692,10 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 // drupyter.jsvg.find(".selection_artifact").remove();
                 this.currentSelection = [];
             }
-            // if (elem) {
-            //     elem.select(".core").attr({filter: drupyter.filter}).addClass("egal-select");
-            //     if (!elem.select(".core").hasClass("connector"))
-            //         this.createSelectionHandles(elem);
-            //     // elem.append(selectionBox);
-            // }
-            // $.each(listeners, function (index, value) {
-            //     value(elem);
-            // });
             self.createSelectionHandles();
+            $.each(listeners, function (i,l) {
+                l(elem);
+            });
 
 
         };
@@ -704,30 +715,6 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 e.transform(e.data("orig_transform") + "T" + dx + "," + dy);
             });
 
-            //
-            // // if (x % 1 != 0 || y % 1 != 0) return;
-            // var parent = core.parent();
-            // core.transform(core.data("orig_transform") + "T" + dx + "," + dy);
-            // parent.selectAll(".endPoint").forEach(function (ep) {
-            //     ep.transform(ep.data("orig_transform") + "T" + dx + "," + dy);
-            //     $.each(moveListeners, function (index, listener) {
-            //         listener(ep);
-            //     });
-            // });
-            // parent.selectAll(".label").forEach(function (label) {
-            //     label.transform(label.data("orig_transform") + "T" + dx + "," + dy);
-            //     $.each(moveListeners, function (index, listener) {
-            //         listener(label);
-            //     });
-            // });
-            // drupyter.snap.selectAll(".selection_artifact").forEach(function (e) {
-            //     e.transform(e.data("orig_transform") + "T" + dx + "," + dy);
-            // });
-            // $.each(moveListeners, function (index, listener) {
-            //     listener(core);
-            // });
-            // console.log(bbox);
-            // console.log(y1Bboxes);
             drawAlignables(drupyter.snap.select(".selection_box").getBBox());
 
 
