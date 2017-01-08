@@ -74,7 +74,6 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         // $(self.container).append(menuDiv);
         $(self.container).append($(menuTxt));
         $(self.container).append("<div class='drawing'></div>");
-        $(self.container).append("<div class='hidden' style=''></div>");
 
         linkContextButtonNew(self.container + " .select", this.selectionContext);
         $(self.container + " .select").addClass("active");
@@ -275,11 +274,13 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             // collect all text elements and create sub divs
             var div2text = {};
             selector.each(function (i, text) {
-                // console.log(text);
-                var source = text.getAttribute("data-src");
-                var id = 'egal-latex' + i;
-                var div = $("<div class='temp-latex-text' id='" + id + "'>" + source + "</div>").appendTo(tmpLatex);
-                div2text[id] = text;
+                if (!$(text).hasClass("mathjax_text")) {
+                    // console.log(text);
+                    var source = text.getAttribute("data-src");
+                    var id = 'egal-latex' + i;
+                    var div = $("<div class='temp-latex-text' id='" + id + "'>" + source + "</div>").appendTo(tmpLatex);
+                    div2text[id] = text;
+                }
             });
             // console.log("What");
             // console.log(tmpLatex.children()[0]);
