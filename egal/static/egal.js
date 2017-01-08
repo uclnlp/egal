@@ -252,10 +252,12 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             selector.each(function (i, label) {
                 var snapLabel = new Snap(label);
                 if (snapLabel.hasClass("mathjax_text")) {
-                    var bbox = snapLabel.getBBox();
+                    var bbox = self.snap.select('#' + snapLabel.parent().attr("id")).getBBox();
                     console.log(snapLabel.parent());
-                    console.log(snapLabel.parent().getBBox());
-                    var textVal =snapLabel.attr("data-src");
+                    console.log(snapLabel.parent().attr("id"));
+
+                    console.log(bbox);
+                    var textVal = snapLabel.attr("data-src");
                     var newLabel = snapLabel.paper.text(bbox.cx, bbox.cy, textVal).attr({
                         'font-size': 20,
                         "text-anchor": "middle",
@@ -269,7 +271,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         };
 
         this.convertLatex = function (selector) {
-            var tmpLatex = $("<div class='temp-latex'></div>").appendTo(self.jcontainer);
+            var tmpLatex = $("<div class='temp-latex' style='visibility: hidden'></div>").appendTo(self.jcontainer);
             // collect all text elements and create sub divs
             var div2text = {};
             selector.each(function (i, text) {
@@ -515,7 +517,9 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             createForeignTextInput(element, bbox.cx - (bbox.width - 20) / 2, bbox.cy - 15, bbox.width - 20, 20,
                 init, 20,
                 function (textVal) {
+                    console.log(textVal);
                     drupyter.convertLatexBack($(label.node));
+                    label = element.select(".label"); //conversion may have replaced the label.
                     label.attr({
                         // "text-anchor": "middle",
                         // "alignment-baseline": "central",
