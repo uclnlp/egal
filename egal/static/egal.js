@@ -248,6 +248,25 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             this.activateElement(elem);
         };
 
+        this.convertLatexBack = function (selector) {
+            selector.each(function (i, label) {
+                var snapLabel = new Snap(label);
+                if (snapLabel.hasClass("mathjax_text")) {
+                    var bbox = snapLabel.parent().select("core").getBBox();
+                    console.log(snapLabel.paper);
+                    var textVal =snapLabel.attr("data-src");
+                    var newLabel = snapLabel.paper.text(bbox.cx, bbox.cy, textVal).attr({
+                        'font-size': 20,
+                        "text-anchor": "middle",
+                        "alignment-baseline": "central",
+                        "data-src": textVal,
+                    }).addClass("label sub");
+                    $(snapLabel.node).replaceWith(newLabel.node);
+                    console.log("Removed!");
+                }
+            })
+        };
+
         this.convertLatex = function (selector) {
             var tmpLatex = $("<div class='temp-latex'></div>").appendTo(self.jcontainer);
             // collect all text elements and create sub divs
@@ -276,7 +295,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                         // foreign.append(mj);
                         var group = drupyter.snap.group(new Snap(mj));// );
                         var gbbox = group.getBBox();
-                        group.addClass("sub mathjax_text");
+                        // group.addClass("")
+                        group.addClass("sub mathjax_text label"); //todo change to be more generic
                         group.attr("data-src", text.getAttribute("data-src"));
                         group.transform("t" + (bbox.cx - gbbox.width / 2) + "," + (bbox.cy - gbbox.height / 2));
                         console.log(text);
@@ -310,7 +330,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             self.arrow = self.snap.polygon([0, 0, 0, 6, 9, 3, 0, 0]).attr({fill: '#323232'});//.transform('r90');
             self.marker = self.arrow.marker(0, 0, 10, 10, 9, 3);
 
-            // self.convertLatex(self.jsvg.find("text"));
+            self.convertLatex(self.jsvg.find(".label"));
 
             // self.activateElement($(self.svg).find("*"));
             var elements = self.snap.selectAll(".drupElem");
@@ -386,6 +406,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         this.saveCurrentSVG = function () {
             self.connectContext.saveConnectors();
             var cloned = $(self.drawing).clone();
+            self.convertLatexBack(cloned.find(".mathjax_text"));
             cloned.find(".transient").remove();
             cloned.find("#egal_background").remove();
             cloned.find(".egal-select .core").css({filter: ''});
@@ -456,8 +477,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             console.log("Selected in MakeCircle Mode");
         }
 
-
     }
+
 
     function SelectionContext(drupyter) {
 
@@ -489,10 +510,11 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             console.log("OnDblClick");
             var bbox = element.getBBox();
             var label = element.select(".label");
-            var init = label.attr("text") === "|" ? "" : label.attr("text")
+            var init = label.attr("data-src") === "|" ? "" : label.attr("data-src");
             createForeignTextInput(element, bbox.cx - (bbox.width - 20) / 2, bbox.cy - 15, bbox.width - 20, 20,
                 init, 20,
                 function (textVal) {
+                    drupyter.convertLatexBack($(label.node));
                     label.attr({
                         // "text-anchor": "middle",
                         // "alignment-baseline": "central",
@@ -500,11 +522,12 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                         opacity: textVal === "" ? 0.0 : 1.0,
                         "data-src": textVal
                     });
-                    var labelBbox = label.getBBox();
-                    label.attr({
-                        // x: bbox.cx - (labelBbox.width / 2),
-                        // y: bbox.cy + (labelBbox.height / 2)
-                    })
+                    drupyter.convertLatex($(label.node));
+                    // var labelBbox = label.getBBox();
+                    // label.attr({
+                    //     // x: bbox.cx - (labelBbox.width / 2),
+                    //     // y: bbox.cy + (labelBbox.height / 2)
+                    // })
                 });
         };
 
