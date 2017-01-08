@@ -496,6 +496,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         var y1Bboxes = {};
         var x2Bboxes = {};
         var x1Bboxes = {};
+        var cxBboxes = {};
+        var cyBboxes = {};
         var widthBboxes = {};
         var heightBboxes = {};
 
@@ -882,6 +884,12 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 drupyter.snap.prepend(line);
             }
 
+            $.each(cxBboxes[bbox.cx.toFixed(0)], function (index, otherBbox) {
+                createAlignLine(bbox.cx, bbox.cy, otherBbox.cx, otherBbox.cy, alignLineAttr)
+            });
+            $.each(cyBboxes[bbox.cy.toFixed(0)], function (index, otherBbox) {
+                createAlignLine(bbox.cx, bbox.cy, otherBbox.cx, otherBbox.cy, alignLineAttr)
+            });
             $.each(y2Bboxes[bbox.y2.toFixed(0)], function (index, otherBbox) {
                 createAlignLine(bbox.cx, bbox.y2, otherBbox.cx, bbox.y2, alignLineAttr)
             });
@@ -922,11 +930,15 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             y1Bboxes = {};
             x1Bboxes = {};
             x2Bboxes = {};
+            cxBboxes = {};
+            cyBboxes = {};
             widthBboxes = {};
             heightBboxes = {};
             drupyter.snap.selectAll(".alignable").forEach(function (otherCore) {
                 if (!otherCore.parent().hasClass("egal-select")) {
                     var bbox = otherCore.getBBox();
+                    appendToList(cxBboxes, bbox.cx.toFixed(0), bbox);
+                    appendToList(cyBboxes, bbox.cy.toFixed(0), bbox);
                     appendToList(y2Bboxes, bbox.y2.toFixed(0), bbox);
                     appendToList(y1Bboxes, bbox.y.toFixed(0), bbox);
                     appendToList(x2Bboxes, bbox.x2.toFixed(0), bbox);
