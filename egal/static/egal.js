@@ -252,8 +252,9 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             selector.each(function (i, label) {
                 var snapLabel = new Snap(label);
                 if (snapLabel.hasClass("mathjax_text")) {
-                    var bbox = snapLabel.parent().select("core").getBBox();
-                    console.log(snapLabel.paper);
+                    var bbox = snapLabel.getBBox();
+                    console.log(snapLabel.parent());
+                    console.log(snapLabel.parent().getBBox());
                     var textVal =snapLabel.attr("data-src");
                     var newLabel = snapLabel.paper.text(bbox.cx, bbox.cy, textVal).attr({
                         'font-size': 20,
@@ -544,7 +545,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                     $(drupyter.svg + " [data-n1='" + ep.attr("id") + "']").remove();
                     $(drupyter.svg + " [data-n2='" + ep.attr("id") + "']").remove();
                 });
-                this.currentSelection.remove();
+                drupyter.jsvg.find(".egal-select").remove();
                 this.selectElement(null);
             }
         };
