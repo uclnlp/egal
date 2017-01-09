@@ -9,6 +9,31 @@ function appendToList(dict, key, value) {
 
 define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTxt) {
 
+    function my$each(elements, f) {
+        if (elements) {
+            $.each(elements, f)
+        }
+    }
+
+    function removeClass(selector, classes) {
+        $(selector).each(function (index, elem) {
+            elem.classList.add(classes);
+        })
+    }
+
+    function removeClass(selector, classes) {
+        $(selector).each(function (index, elem) {
+            elem.classList.remove(classes);
+        })
+    }
+
+    function toggleClass(selector, classes) {
+        $(selector).each(function (index, elem) {
+            elem.classList.toggle(classes);
+        })
+    }
+
+
     // http://svg.dabbles.info/snaptut-freetransform-vb3.js
 //view-source:https://viereck.ch/latex-to-svg/
 //http://stackoverflow.com/questions/34924033/convert-latex-mathml-to-svg-or-image-with-mathjax-or-similar
@@ -104,7 +129,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             $(self.container + " .toggle-visible i").toggleClass("fa-toggle-on");
             $(self.container + " .toggle-visible i").toggleClass("fa-toggle-off");
             $(self.container + " .hideable").toggle();
-            $.each(self.menuBarListeners, function (index, l) {
+            my$each(self.menuBarListeners, function (index, l) {
                 l();
             })
         };
@@ -561,7 +586,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             if (this.currentSelection.length > 0) {
                 console.log("Yo!");
                 var created = [];
-                $.each(this.currentSelection, function (i, elem) {
+                my$each(this.currentSelection, function (i, elem) {
                     console.log(elem);
                     var cloned = elem.clone();
                     // $(cloned.node).find("*").unbind();
@@ -697,7 +722,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                         });
 
                         drupyter.snap.selectAll(".egal-select .sub").forEach(function (e) {
-                            $.each(moveListeners, function (index, listener) {
+                            my$each(moveListeners, function (index, listener) {
                                 listener(e);
                             });
                         });
@@ -762,7 +787,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             }
             elem.toggleClass("egal-select");
             self.createSelectionHandles();
-            $.each(listeners, function (i, l) {
+            my$each(listeners, function (i, l) {
                 l(elem);
             });
 
@@ -772,11 +797,11 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         this.selectElements = function (elems) {
             this.currentSelection = elems;
             drupyter.jsvg.find(".egal-select .core").css({filter: ''});
-            drupyter.jsvg.find(".egal-select").removeClass("egal-select");
-            $.each(elems, function (i, elem) {
+            removeClass(drupyter.jsvg.find(".egal-select"), "egal-select");
+            my$each(elems, function (i, elem) {
                 elem.addClass("egal-select");
                 elem.select(".core").attr({filter: "url(#" + drupyter.filter.attr("id") + ")"});
-                $.each(listeners, function (i, l) {
+                my$each(listeners, function (i, l) {
                     l(elem);
                 });
 
@@ -786,7 +811,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         this.selectElement = function (elem) {
             drupyter.jsvg.find(".egal-select .core").css({filter: ''});
-            drupyter.jsvg.find(".egal-select").removeClass("egal-select");
+            removeClass(drupyter.jsvg.find(".egal-select"), "egal-select");
 
             if (elem) {
                 // console.log("Selecting ...");
@@ -799,7 +824,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 this.currentSelection = [];
             }
             self.createSelectionHandles();
-            $.each(listeners, function (i, l) {
+            my$each(listeners, function (i, l) {
                 l(elem);
             });
 
@@ -813,7 +838,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             if (core.hasClass("connector")) return;
             drupyter.snap.selectAll(".egal-select .sub").forEach(function (ep) {
                 ep.transform(ep.data("orig_transform") + "T" + dx + "," + dy);
-                $.each(moveListeners, function (index, listener) {
+                my$each(moveListeners, function (index, listener) {
                     listener(ep);
                 });
             });
@@ -884,28 +909,28 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 drupyter.snap.prepend(line);
             }
 
-            $.each(cxBboxes[bbox.cx.toFixed(0)], function (index, otherBbox) {
+            my$each(cxBboxes[bbox.cx.toFixed(0)], function (index, otherBbox) {
                 createAlignLine(bbox.cx, bbox.cy, otherBbox.cx, otherBbox.cy, alignLineAttr)
             });
-            $.each(cyBboxes[bbox.cy.toFixed(0)], function (index, otherBbox) {
+            my$each(cyBboxes[bbox.cy.toFixed(0)], function (index, otherBbox) {
                 createAlignLine(bbox.cx, bbox.cy, otherBbox.cx, otherBbox.cy, alignLineAttr)
             });
-            $.each(y2Bboxes[bbox.y2.toFixed(0)], function (index, otherBbox) {
+            my$each(y2Bboxes[bbox.y2.toFixed(0)], function (index, otherBbox) {
                 createAlignLine(bbox.cx, bbox.y2, otherBbox.cx, bbox.y2, alignLineAttr)
             });
-            $.each(y1Bboxes[bbox.y.toFixed(0)], function (index, otherBbox) {
+            my$each(y1Bboxes[bbox.y.toFixed(0)], function (index, otherBbox) {
                 createAlignLine(bbox.cx, bbox.y, otherBbox.cx, bbox.y, alignLineAttr)
             });
             // console.log(x1Bboxes);
-            $.each(x1Bboxes[bbox.x.toFixed(0)], function (index, otherBbox) {
+            my$each(x1Bboxes[bbox.x.toFixed(0)], function (index, otherBbox) {
                 createAlignLine(bbox.x, bbox.cy, bbox.x, otherBbox.cy, alignLineAttr)
             });
-            $.each(x2Bboxes[bbox.x2.toFixed(0)], function (index, otherBbox) {
+            my$each(x2Bboxes[bbox.x2.toFixed(0)], function (index, otherBbox) {
                 createAlignLine(bbox.x2, bbox.cy, bbox.x2, otherBbox.cy, alignLineAttr)
             });
 
             var dimLineAttr = {stroke: "lightblue"};
-            $.each(widthBboxes[bbox.width.toFixed(0)], function (index, otherBbox) {
+            my$each(widthBboxes[bbox.width.toFixed(0)], function (index, otherBbox) {
                 createAlignLine(otherBbox.x, otherBbox.y - 10, otherBbox.x2, otherBbox.y - 10, dimLineAttr);
                 createAlignLine(otherBbox.x, otherBbox.y - 15, otherBbox.x, otherBbox.y - 5, dimLineAttr);
                 createAlignLine(otherBbox.x2, otherBbox.y - 15, otherBbox.x2, otherBbox.y - 5, dimLineAttr);
@@ -913,7 +938,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 createAlignLine(bbox.x, bbox.y - 15, bbox.x, bbox.y - 5, dimLineAttr);
                 createAlignLine(bbox.x2, bbox.y - 15, bbox.x2, bbox.y - 5, dimLineAttr);
             });
-            $.each(heightBboxes[bbox.height.toFixed(0)], function (index, otherBbox) {
+            my$each(heightBboxes[bbox.height.toFixed(0)], function (index, otherBbox) {
                 createAlignLine(otherBbox.x - 10, otherBbox.y, otherBbox.x - 10, otherBbox.y2, dimLineAttr);
                 createAlignLine(otherBbox.x - 5, otherBbox.y, otherBbox.x - 15, otherBbox.y, dimLineAttr);
                 createAlignLine(otherBbox.x - 5, otherBbox.y2, otherBbox.x - 15, otherBbox.y2, dimLineAttr);
@@ -1004,10 +1029,10 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             //     connector.attr({x2: bbox.cx, y2: bbox.cy})
             // });
 
-            $.each(elem2lineN1[elem.attr("id")], function (index, connector) {
+            my$each(elem2lineN1[elem.attr("id")], function (index, connector) {
                 connector.attr({x1: bbox.cx, y1: bbox.cy})
             });
-            $.each(elem2lineN2[elem.attr("id")], function (index, connector) {
+            my$each(elem2lineN2[elem.attr("id")], function (index, connector) {
                 connector.attr({x2: bbox.cx, y2: bbox.cy})
             });
 
@@ -1015,7 +1040,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             // var elemLine = elem2line[elem.id];
             // console.log(elemLine);
             // if (elemLine) {
-            //     $.each(elemLine, function (index, elem) {
+            //     $each(elemLine, function (index, elem) {
             //         if (elem.start) {
             //             elem.line.attr({x1: bbox.cx, y1: bbox.cy})
             //         } else {
@@ -1131,7 +1156,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             var elemLine = elem2line[elem.id];
             // console.log(elemLine);
             if (elemLine) {
-                $.each(elemLine, function (index, elem) {
+                my$each(elemLine, function (index, elem) {
                     if (elem.start) {
                         elem.line.attr({x1: bbox.cx, y1: bbox.cy})
                     } else {
@@ -1153,7 +1178,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             if (currentConnectors) {
                 currentConnectors.remove();
             }
-            $.each(connectors, function (index, connector) {
+            my$each(connectors, function (index, connector) {
                 $(drupyter.drawing).append($("<div>", {class: "connector", n1: connector.n1, n2: connector.n2}));
             })
         };
