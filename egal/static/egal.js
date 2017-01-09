@@ -15,7 +15,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         }
     }
 
-    function removeClass(selector, classes) {
+    function addClass(selector, classes) {
         $(selector).each(function (index, elem) {
             elem.classList.add(classes);
         })
