@@ -27,9 +27,13 @@ jupyter nbextension enable --py egal
 ```
 
 #### Optional: Server Extension 
-If you want to use the server extensions (which allows clients to 
-save the SVG on the jupyter server), run:
+If you want to use egal outside of a notebook you need to install the server extensions (which allows clients to 
+save the SVG on the jupyter server):
 
 ```bash
 jupyter serverextension enable --py egal 
 ```
+
+Then you can edit an SVG on the server via accessing http://localhost:8888/files/draw.html (assuming you run
+`jupyter notebook` locally).
+
