@@ -317,6 +317,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             MathJax.Hub.Queue(
                 ["Typeset", MathJax.Hub, tmpLatex[0]],
                 function () {
+                    //for SVG output
                     tmpLatex.find("svg").each(function (i, mj) {
                         console.log(mj);
                         var jmj = $(mj);
@@ -335,8 +336,24 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                         console.log(text);
                         console.log($(text).parent());
                         new $(text).replaceWith(group.node);
-
                     });
+                    //for HTML-CSS output
+                    tmpLatex.find(".MathJax").each(function (i, mj) {
+                        console.log(mj);
+                        var jmj = $(mj);
+                        var text = div2text[mj.parentNode.parentNode.id];
+                        var bbox = new Snap(text).getBBox();
+                        var foreign = $(createForeignInput(
+                            bbox.cx - (jmj.width() / 2),
+                            bbox.cy - (jmj.height() / 2), jmj.width(), jmj.height()));
+                        foreign.append(mj);
+                        foreign.attr("class", "sub-foreign mathjax_text label");
+                        // foreign.addClass("sub-foreign mathjax_text label"); //todo change to be more generic
+                        foreign.attr("data-src", text.getAttribute("data-src"));
+                        new $(text).replaceWith(foreign);
+                    });
+
+
                     tmpLatex.remove();
                     // console.log("Done!");
                 }
@@ -842,6 +859,14 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             if (core.hasClass("connector")) return;
             drupyter.snap.selectAll(".egal-select .sub").forEach(function (ep) {
                 ep.transform(ep.data("orig_transform") + "T" + dx + "," + dy);
+                my$each(moveListeners, function (index, listener) {
+                    listener(ep);
+                });
+            });
+            drupyter.snap.selectAll(".egal-select .sub-foreign").forEach(function (ep) {
+                ep.attr("x", dx + Number(ep.attr("x")));
+                ep.attr("y", dx + Number(ep.attr("y")));
+                // ep.transform(ep.data("orig_transform") + "T" + dx + "," + dy);
                 my$each(moveListeners, function (index, listener) {
                     listener(ep);
                 });
