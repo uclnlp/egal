@@ -9,6 +9,10 @@ function appendToList(dict, key, value) {
 
 define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTxt) {
 
+    // MathJax.Hub.Config({
+    //     jax: ["input/TeX", "output/SVG", "output/PreviewHTML"],
+    // });
+
     function my$each(elements, f) {
         if (elements) {
             $.each(elements, f)
