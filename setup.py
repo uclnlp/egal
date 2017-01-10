@@ -8,7 +8,7 @@ def read(fname):
 
 setup(
     name='egal',  # This is the name of your PyPI-package.
-    version='0.1.1',  # Update the version number for new releases
+    version='0.1-alpha  ',  # Update the version number for new releases
     scripts=[],  # The name of your script, and also the command you'll be using for calling it
     packages=['egal'],
     author='Sebastian Riedel',
