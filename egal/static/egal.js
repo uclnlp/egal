@@ -730,6 +730,11 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                             h.transform(h.data("orig_transform") + "t" +
                                 (new_pos.x - h.data("x")).toFixed(4) + "," + (new_pos.y - h.data("y")).toFixed(4));
                         });
+                        drupyter.snap.selectAll(".egal-select .sub-foreign").forEach(function (h) {
+                            var new_pos = newPosition(h.data("x"), h.data("y"));
+                            h.attr("x", new_pos.x.toFixed(4));
+                            h.attr("y", new_pos.y.toFixed(4));
+                        });
                         var scale_x = keepX ? 1 : (handle.data("hx") - fixed_x + dx) / (handle.data("hx") - fixed_x);
                         var scale_y = keepY ? 1 : (handle.data("hy") - fixed_y + dy) / (handle.data("hy") - fixed_y);
                         selectionBox.transform(selectionBox.data("orig_transform") +
@@ -741,6 +746,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                             core.transform(core.data("orig_transform") +
                                 "S" + scale_x + "," + scale_y + "," + fixed_x + "," + fixed_y);
                         });
+
 
                         drupyter.snap.selectAll(".egal-select .sub").forEach(function (e) {
                             my$each(moveListeners, function (index, listener) {
@@ -773,6 +779,12 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                             sub.data("x", sub.getBBox().cx);
                             sub.data("y", sub.getBBox().cy);
                         });
+                        drupyter.snap.selectAll(".egal-select .sub-foreign").forEach(function (ep) {
+                            ep.data("x", Number(ep.attr("x")));
+                            ep.data("y", Number(ep.attr("y")));
+                        });
+
+
                         cacheAlignables();
 
 
@@ -864,9 +876,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 });
             });
             drupyter.snap.selectAll(".egal-select .sub-foreign").forEach(function (ep) {
-                ep.attr("x", dx + Number(ep.attr("x")));
-                ep.attr("y", dx + Number(ep.attr("y")));
-                // ep.transform(ep.data("orig_transform") + "T" + dx + "," + dy);
+                ep.attr("x", dx + ep.data("ox"));
+                ep.attr("y", dy + ep.data("oy"));
                 my$each(moveListeners, function (index, listener) {
                     listener(ep);
                 });
@@ -895,6 +906,10 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             // }
             drupyter.snap.selectAll(".egal-select .sub").forEach(function (ep) {
                 ep.data("orig_transform", ep.transform().globalMatrix.toTransformString());
+            });
+            drupyter.snap.selectAll(".egal-select .sub-foreign").forEach(function (ep) {
+                ep.data("ox", Number(ep.attr("x")));
+                ep.data("oy", Number(ep.attr("y")));
             });
             // core.data("orig_transform", core.transform().globalMatrix.toTransformString());
             // parent.selectAll(".endPoint").forEach(function (ep) {
