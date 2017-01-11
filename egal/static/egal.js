@@ -341,11 +341,11 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                         new $(text).replaceWith(group.node);
                     });
                     //for HTML-CSS output
-                    tmpLatex.find(".MathJax > nobr > span").each(function (i, mj) {
+                    tmpLatex.find(".MathJax").each(function (i, mj) {
                         var jmj = $(mj);
                         // console.log(jmj);
-                        var span = jmj;//.find("> nobr > span");
-                        var text = div2text[mj.parentNode.parentNode.parentNode.parentNode.id];
+                        var span = jmj.find("> nobr > span");
+                        var text = div2text[mj.parentNode.parentNode.id];
                         var bbox = new Snap(text).getBBox();
                         var foreign = $(createForeignInput(
                             bbox.cx - (span.width() / 2),
