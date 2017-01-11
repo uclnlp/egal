@@ -257,7 +257,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         this.registerAndDecorateElement = function (elem) {
             this.registerElement(elem);
             var bbox = elem.getBBox();
-            var label = self.snap.text(bbox.cx, bbox.cy, "").addClass("label sub").attr({
+            var label = self.snap.text(bbox.cx, bbox.cy, "").addClass("egal-label sub").attr({
                 'font-size': 20,
                 "text-anchor": "middle",
                 "alignment-baseline": "central",
@@ -291,7 +291,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                         "text-anchor": "middle",
                         "alignment-baseline": "central",
                         "data-src": textVal,
-                    }).addClass("label sub");
+                    }).addClass("egal-label sub");
                     $(snapLabel.node).replaceWith(newLabel.node);
                     console.log("Removed!");
                 }
@@ -299,6 +299,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         };
 
         this.convertLatex = function (selector) {
+            var fontSize = 20;
             var tmpLatex = $("<div class='temp-latex' style='visibility: hidden'></div>").appendTo(self.jcontainer);
             // collect all text elements and create sub divs
             var div2text = {};
@@ -307,7 +308,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                     // console.log(text);
                     var source = text.getAttribute("data-src");
                     var id = 'egal-latex' + i;
-                    var div = $("<div class='temp-latex-text' id='" + id + "'>" + source + "</div>").appendTo(tmpLatex);
+                    var div = $("<div class='temp-latex-text' style='font-size: " + fontSize + "px' id='" + id + "'>" + source + "</div>")
+                        .appendTo(tmpLatex);
                     div2text[id] = text;
                 }
             });
@@ -318,6 +320,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 ["Typeset", MathJax.Hub, tmpLatex[0]],
                 function () {
                     //for SVG output
+                    console.log(tmpLatex.find("svg"));
                     tmpLatex.find("svg").each(function (i, mj) {
                         console.log(mj);
                         var jmj = $(mj);
@@ -330,25 +333,29 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                         var group = drupyter.snap.group(new Snap(mj));// );
                         var gbbox = group.getBBox();
                         // group.addClass("")
-                        group.addClass("sub mathjax_text label"); //todo change to be more generic
+                        group.addClass("sub mathjax_text egal-label"); //todo change to be more generic
                         group.attr("data-src", text.getAttribute("data-src"));
                         group.transform("t" + (bbox.cx - gbbox.width / 2) + "," + (bbox.cy - gbbox.height / 2));
-                        console.log(text);
-                        console.log($(text).parent());
+                        // console.log(text);
+                        // console.log($(text).parent());
                         new $(text).replaceWith(group.node);
                     });
                     //for HTML-CSS output
-                    tmpLatex.find(".MathJax").each(function (i, mj) {
-                        console.log(mj);
+                    tmpLatex.find(".MathJax > nobr > span").each(function (i, mj) {
                         var jmj = $(mj);
-                        var span = jmj.find("span");
-                        var text = div2text[mj.parentNode.parentNode.id];
+                        // console.log(jmj);
+                        var span = jmj;//.find("> nobr > span");
+                        var text = div2text[mj.parentNode.parentNode.parentNode.parentNode.id];
                         var bbox = new Snap(text).getBBox();
                         var foreign = $(createForeignInput(
                             bbox.cx - (span.width() / 2),
                             bbox.cy - (span.height() / 2), span.width(), span.height()));
+                        // console.log(span);
+                        // console.log(span.width());
+                        // console.log(bbox);
                         foreign.append(mj);
-                        foreign.attr("class", "sub-foreign mathjax_text label");
+                        foreign.attr("class", "sub-foreign mathjax_text egal-label");
+                        foreign.attr("style", "color: black; font-size: " + fontSize + "px");
                         // foreign.addClass("sub-foreign mathjax_text label"); //todo change to be more generic
                         foreign.attr("data-src", text.getAttribute("data-src"));
                         new $(text).replaceWith(foreign);
@@ -381,7 +388,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             self.arrow = self.snap.polygon([0, 0, 0, 6, 9, 3, 0, 0]).attr({fill: '#323232'});//.transform('r90');
             self.marker = self.arrow.marker(0, 0, 10, 10, 9, 3);
 
-            self.convertLatex(self.jsvg.find(".label"));
+            self.convertLatex(self.jsvg.find(".egal-label"));
 
             // self.activateElement($(self.svg).find("*"));
             var elements = self.snap.selectAll(".drupElem");
@@ -562,14 +569,14 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         this.onDblClickElement = function (e, element) {
             console.log("OnDblClick");
             var bbox = element.getBBox();
-            var label = element.select(".label");
+            var label = element.select(".egal-label");
             var init = label.attr("data-src") === "|" ? "" : label.attr("data-src");
             createForeignTextInput(element, bbox.cx - (bbox.width - 20) / 2, bbox.cy - 15, bbox.width - 20, 20,
                 init, 20,
                 function (textVal) {
                     console.log(textVal);
                     drupyter.convertLatexBack($(label.node));
-                    label = element.select(".label"); //conversion may have replaced the label.
+                    label = element.select(".egal-label"); //conversion may have replaced the label.
                     label.attr({
                         // "text-anchor": "middle",
                         // "alignment-baseline": "central",
@@ -916,7 +923,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             // parent.selectAll(".endPoint").forEach(function (ep) {
             //     ep.data("orig_transform", ep.transform().globalMatrix.toTransformString());
             // });
-            // parent.selectAll(".label").forEach(function (label) {
+            // parent.selectAll(".egal-label").forEach(function (label) {
             //     label.data("orig_transform", label.transform().globalMatrix.toTransformString());
             // });
             drupyter.snap.selectAll(".selection_artifact").forEach(function (h) {
