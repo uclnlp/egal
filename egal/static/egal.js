@@ -341,11 +341,12 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                     tmpLatex.find(".MathJax").each(function (i, mj) {
                         console.log(mj);
                         var jmj = $(mj);
+                        var span = jmj.find("span");
                         var text = div2text[mj.parentNode.parentNode.id];
                         var bbox = new Snap(text).getBBox();
                         var foreign = $(createForeignInput(
-                            bbox.cx - (jmj.width() / 2),
-                            bbox.cy - (jmj.height() / 2), jmj.width(), jmj.height()));
+                            bbox.cx - (span.width() / 2),
+                            bbox.cy - (span.height() / 2), span.width(), span.height()));
                         foreign.append(mj);
                         foreign.attr("class", "sub-foreign mathjax_text label");
                         // foreign.addClass("sub-foreign mathjax_text label"); //todo change to be more generic
