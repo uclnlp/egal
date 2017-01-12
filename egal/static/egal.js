@@ -571,6 +571,9 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             var bbox = element.getBBox();
             var label = element.select(".egal-label");
             var init = label.attr("data-src") === "|" ? "" : label.attr("data-src");
+            label.attr({
+               visibility: "hidden"
+            });
             createForeignTextInput(element, bbox.cx - (bbox.width - 20) / 2, bbox.cy - 15, bbox.width - 20, 20,
                 init, 20,
                 function (textVal) {
@@ -619,11 +622,18 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                     console.log(elem);
                     var cloned = elem.clone();
                     // $(cloned.node).find("*").unbind();
-                    cloned.selectAll("*").forEach(function (e) {
+                    cloned.selectAll(".sub").forEach(function (e) {
                         // e.removeData();
                         e.transform(e.transform().globalMatrix.toTransformString() + "T10,10");
                         e.paper = drupyter.snap;
                     });
+                    cloned.selectAll(".sub-foreign").forEach(function (e) {
+                        // e.removeData();
+                        e.attr("x", Number(e.attr("x")) + 10);
+                        e.attr("y", Number(e.attr("y")) + 10);
+                        e.paper = drupyter.snap;
+                    });
+
                     created.push(cloned);
                     // console.log(cloned.parent());
                     drupyter.registerElement(cloned);

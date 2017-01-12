@@ -4,6 +4,17 @@ easy SVG drawing in jupyter and elsewhere...
 ### Example
 ![](screenshot.png)
 
+### Features
+
+egal's focus is on drawing simple graphs:  
+
+* Basic Shapes (circles, rectangles, lines)
+* Connectors
+* Labels, with support for Latex
+* Alignment hints when dragging and resizing
+* Multiple Selection
+* Copy & Paste
+
 ### Installation
 
 #### Get the Python Package
