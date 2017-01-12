@@ -585,7 +585,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                         // "alignment-baseline": "central",
                         text: textVal === "" ? "|" : textVal,
                         opacity: textVal === "" ? 0.0 : 1.0,
-                        "data-src": textVal
+                        "data-src": textVal,
+                        visibility:"visible"
                     });
                     drupyter.convertLatex($(label.node));
                     // var labelBbox = label.getBBox();
