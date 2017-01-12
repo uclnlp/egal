@@ -179,7 +179,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             self.jsvg.find(".egal-select .core").css({strokeWidth: $(self.container + " .wi").val()});
         });
         $(self.container + " .fg").change(function () {
-            self.jsvg.find(".egal-select .core").attr({fill: $(self.container + " .bg").val()});
+            self.jsvg.find(".egal-select .core").attr({stroke: $(self.container + " .fg").val()});
         });
         $(self.container + " .bg").change(function () {
             // var snapSelection = new Snap(self.selectionContext.currentSelection);
