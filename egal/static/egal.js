@@ -67,6 +67,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         this.textContext = new TextContext(this);
         // this.lineContext = new LineContext(this);
         this.connectContext = new ConnectContext(this);
+        this.lineContext = new MakeLineContext(this);
         this.currentContext = this.selectionContext;
 
         function linkContextButtonNew(selector, context, update) {
@@ -115,9 +116,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             self.connectContext.arrow = true;
             // console.log("Blah");
         });
-        linkContextButtonNew(self.container + " .makeLine", this.connectContext, function () {
-            self.connectContext.arrow = false;
-        });
+        linkContextButtonNew(self.container + " .makeLine", this.lineContext);
 
         // $(self.container + " .toggle-visible").click(function() {
         //     $(self.container + " .toggle-visible i").toggleClass("fa-toggle-on");
@@ -188,18 +187,41 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         $(self.container + " .height").change(function () {
             self.snap.attr({height: $(self.container + " .height").val()})
         });
+        $(self.container + " .endArrow").change(function () {
+            // var snapSelection = new Snap(self.selectionContext.currentSelection);
+            var checked = $(self.container + " .endArrow").prop('checked');
+            var marker = checked ? "url(#" + self.marker.attr('id') + ")" : '';
+            self.jsvg.find(".egal-select .egal-line").css({"marker-end": marker});
+        });
+        $(self.container + " .startArrow").change(function () {
+            // var snapSelection = new Snap(self.selectionContext.currentSelection);
+            var checked = $(self.container + " .startArrow").prop('checked');
+            var marker = checked ? "url(#" + self.startMarker.attr('id') + ")" : '';
+            self.jsvg.find(".egal-select .egal-line").css({"marker-start": marker});
+        });
 
 
         this.selectionContext.onSelect(function (snapElem) {
             if (snapElem) {
-                core = snapElem.select(".core");
+                var core = snapElem.select(".core");
                 // console.log(snapElem.attr("fill"));
-                $(self.container + " .style-menu").show();
+                $(self.container + " .generic-style").show();
                 $(self.container + " .wi").val(trimPX(core.attr("strokeWidth")));
                 $(self.container + " .bg").val(Snap.color(core.attr("fill")).hex);
                 $(self.container + " .fg").val(Snap.color(core.attr("stroke")).hex);
+                if (core.hasClass("egal-line")) {
+                    $(self.container + " .line-style").show();
+                    $(self.container + " .startArrow").prop('checked',
+                        self.jsvg.find(".egal-select .egal-line").css('marker-start') != "none");
+                    $(self.container + " .endArrow").prop('checked',
+                        self.jsvg.find(".egal-select .egal-line").css('marker-end') != "none");
+                } else {
+                    $(self.container + " .line-style").hide();
+                }
             } else {
-                $(self.container + " .style-menu").hide();
+                $(self.container + " .generic-style").hide();
+                $(self.container + " .line-style").hide();
+
             }
         });
 
@@ -263,7 +285,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 "alignment-baseline": "central",
                 text: "|",
                 opacity: 0.0,
-                "data-src": "",
+                "data-src": ""
             });
             elem.append(label);
         };
@@ -304,6 +326,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             // collect all text elements and create sub divs
             var div2text = {};
             selector.each(function (i, text) {
+                // console.log("Processing text element");
                 if (!$(text).hasClass("mathjax_text")) {
                     // console.log(text);
                     var source = text.getAttribute("data-src");
@@ -385,8 +408,10 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 .attr({id: "egal_background"}).prependTo(self.snap);
             self.filter = self.snap.filter(Snap.filter.shadow(0, 2, 3));
 
-            self.arrow = self.snap.polygon([0, 0, 0, 6, 9, 3, 0, 0]).attr({fill: '#323232'});//.transform('r90');
-            self.marker = self.arrow.marker(0, 0, 10, 10, 9, 3);
+            self.arrow = self.snap.polygon([0, 0, 0, 6, 9, 3, 0, 0]).attr({fill: '#323232', id: "arrow"});//.transform('r90');
+            self.marker = self.arrow.marker(0, 0, 10, 10, 9, 3).attr({id: 'arrowEndMarker'});
+            self.startArrow = self.snap.polygon([0, 3, 9, 0, 9, 6, 0, 3]).attr({fill: '#323232', id: "startArrow"});//.transform('r90');
+            self.startMarker = self.startArrow.marker(0, 0, 10, 10, 0, 3).attr({id: 'arrowStartMarker'});
 
             self.convertLatex(self.jsvg.find(".egal-label"));
 
@@ -568,12 +593,15 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         this.onDblClickElement = function (e, element) {
             console.log("OnDblClick");
+            console.log(element);
             var bbox = element.getBBox();
+            console.log(bbox);
             var label = element.select(".egal-label");
             var init = label.attr("data-src") === "|" ? "" : label.attr("data-src");
             label.attr({
-               visibility: "hidden"
+                visibility: "hidden"
             });
+            self.selectElement(null);
             createForeignTextInput(element, bbox.cx - (bbox.width - 20) / 2, bbox.cy - 15, bbox.width - 20, 20,
                 init, 20,
                 function (textVal) {
@@ -586,9 +614,10 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                         text: textVal === "" ? "|" : textVal,
                         opacity: textVal === "" ? 0.0 : 1.0,
                         "data-src": textVal,
-                        visibility:"visible"
+                        visibility: "visible"
                     });
                     drupyter.convertLatex($(label.node));
+                    self.selectElement(element);
                     // var labelBbox = label.getBBox();
                     // label.attr({
                     //     // x: bbox.cx - (labelBbox.width / 2),
@@ -1149,7 +1178,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             if (!line) {
                 line = drupyter.snap.line(bbox.cx, bbox.cy, bbox.cx, bbox.cy).attr({
                     stroke: '#000',
-                }).addClass("drupElem connector");
+                }).addClass("drupElem connector egal-line");
                 line.attr("data-n1", endPoint.attr("id"));
                 if (this.arrow) {
                     line.attr({"marker-end": drupyter.marker});
@@ -1200,103 +1229,6 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         this.clear = function () {
 
-        };
-
-
-    }
-
-    function OldConnectContext(drupyter) {
-
-        var line = null;
-        var connectors = [];
-        var currentStart = null;
-        var elem2line = {};
-
-        drupyter.selectionContext.onMove(function (elem) {
-            var bbox = new Snap(elem).getBBox();
-            // console.log("Moved " + elem);
-            // line.attr({x2: bbox.cx, y2: bbox.cy})
-            var elemLine = elem2line[elem.id];
-            // console.log(elemLine);
-            if (elemLine) {
-                my$each(elemLine, function (index, elem) {
-                    if (elem.start) {
-                        elem.line.attr({x1: bbox.cx, y1: bbox.cy})
-                    } else {
-                        elem.line.attr({x2: bbox.cx, y2: bbox.cy})
-                    }
-                })
-            }
-        });
-
-        this.clear = function () {
-            connectors = [];
-            elem2line = {};
-        };
-
-
-        this.saveConnectors = function () {
-            var currentConnectors = $(drupyter.drawing).children(".connector");
-            // console.log(currentConnectors);
-            if (currentConnectors) {
-                currentConnectors.remove();
-            }
-            my$each(connectors, function (index, connector) {
-                $(drupyter.drawing).append($("<div>", {class: "connector", n1: connector.n1, n2: connector.n2}));
-            })
-        };
-
-        this.loadConnectors = function () {
-            var connectors = $(drupyter.drawing).children(".connector");
-            connectors.each(function (i, elem) {
-                // console.log(elem);
-                // console.log(typeof(elem));
-                // console.log($(elem));
-                //    todo: set up line
-                //     var line = drupyter.snap.line({})
-                var id1 = elem.getAttribute("n1");
-                var id2 = elem.getAttribute("n2");
-                var n1 = drupyter.snap.select('#' + id1);
-                var n2 = drupyter.snap.select('#' + id2);
-                var b1 = n1.getBBox();
-                var b2 = n2.getBBox();
-                var line = drupyter.snap.line({
-                    x1: b1.cx,
-                    y1: b1.cy,
-                    x2: b2.cx,
-                    y2: b2.cy
-                }).attr({stroke: '#000'}).addClass("transient").prependTo(drupyter.snap);
-                if (!elem2line[id1]) elem2line[id1] = [];
-                if (!elem2line[id2]) elem2line[id2] = [];
-                elem2line[id1].push({line: line, start: true});
-                elem2line[id2].push({line: line, start: false});
-                connectors.push({n1: id1, n2: id2});
-            });
-        };
-
-
-        this.onClickElement = function (e, element) {
-            var id = $(element).attr('id');
-            var bbox = new Snap(element).getBBox();
-            if (currentStart == null) {
-                currentStart = id;
-                line = drupyter.snap.line(bbox.cx, bbox.cy, bbox.cx, bbox.cy).attr({
-                    stroke: '#000',
-                }).addClass("transient");
-                line.prependTo(drupyter.snap);
-                // console.log("Clicked start: " + id);
-                if (!elem2line[id]) elem2line[id] = [];
-                elem2line[id].push({line: line, start: true});
-            } else {
-                // console.log("Clicked end: " + id);
-                line.attr({x2: bbox.cx, y2: bbox.cy});
-                // console.log(element.id);
-                if (!elem2line[id]) elem2line[id] = [];
-                elem2line[id].push({line: line, start: false});
-                connectors.push({n1: currentStart, n2: element.id});
-                currentStart = null;
-                // console.log(elem2line);
-            }
         };
 
 
@@ -1356,18 +1288,24 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             var offset = $(element.node).offset();
             var x = e.pageX - offset.left;
             var y = e.pageY - offset.top;
-            text = drupyter.snap.text(x, y, "").addClass("core alignable sub");
+            text = drupyter.snap.text(x, y, "").addClass("core alignable sub egal-label").attr({
+                "text-anchor": "middle",
+                "alignment-baseline": "central",
+            });
             var textGroup = drupyter.snap.group(text);
-            drupyter.registerAndDecorateElement(textGroup);
+            drupyter.registerElement(textGroup);
             if (field) field.saveRemove();
 
-            field = createForeignTextInput($(drupyter.svg), x, y, 50, 30, "", 20, function (textVal) {
+            field = createForeignTextInput($(drupyter.svg), x - 100, y, 200, 30, "", 20, function (textVal) {
                 // console.log(textVal);
                 text.attr({
                     y: y + 20,
                     text: textVal,
-                    'font-size': 20
+                    'font-size': 20,
+                    'data-src': textVal
                 });
+                drupyter.convertLatex($(text.node));
+
             });
 
         };
@@ -1441,6 +1379,50 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                     y: top,
                     height: height,
                     width: width,
+                })
+            }
+        };
+
+        this.onClickElement = function (e, element) {
+            // console.log("Selected in MakeCircle Mode");
+        };
+
+
+    }
+
+    function MakeLineContext(drupyter) {
+        var line = null;
+
+        this.onClick = function (e, element) {
+            if (line) {
+                line.addClass("core alignable sub egal-line");
+                var group = drupyter.snap.group(line);
+                drupyter.registerAndDecorateElement(group);
+                drupyter.saveCurrentSVG();
+                line = null;
+            } else {
+                var offset = $(element.node).offset();
+                var x = e.pageX - offset.left;
+                var y = e.pageY - offset.top;
+                line = drupyter.snap.line(x, y, x, y);
+                line.attr({
+                    fill: "#fff",
+                    stroke: "#000",
+                    strokeWidth: 1,
+                    "vector-effect": "non-scaling-stroke"
+                });
+            }
+        };
+
+        this.onMouseMove = function (e, element) {
+            if (line) {
+                console.log("Changing ...");
+                var offset = $(element.node).offset();
+                var x = e.pageX - offset.left;
+                var y = e.pageY - offset.top;
+                line.attr({
+                    x2: x,
+                    y2: y
                 })
             }
         };
