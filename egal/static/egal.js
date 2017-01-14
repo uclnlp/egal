@@ -38,9 +38,20 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
     }
 
 
-    // http://svg.dabbles.info/snaptut-freetransform-vb3.js
-//view-source:https://viereck.ch/latex-to-svg/
-//http://stackoverflow.com/questions/34924033/convert-latex-mathml-to-svg-or-image-with-mathjax-or-similar
+    /**
+     * This creates an Egal editor within the specified container.
+     * @param container a CSS selector to specify the container in which the editor will live.
+     * @param options a set of options:
+     * <ul>
+     *     <li>width: the desired width of the SVG (100% by default), if not specified by SVG content</li>
+     *     <li>height: the desired height of the SVG (400 by default), if not specified by SVG content</li>
+     *     <li>content: a string containing an SVG image, can be empty. Only used if `drawName` is not set.</li>
+     *     <li>drawName: a name of the drawing used to save and load the drawing on the notebook server.
+     *     When not set content will load from `content` option.</li>
+     * </ul>
+     *
+     * @constructor
+     */
     function Egal(container, options) {
         this.options = options;
         this.container = container;
