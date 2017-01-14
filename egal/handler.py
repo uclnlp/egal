@@ -4,7 +4,6 @@ import os.path
 
 __UPLOADS__ = ".drawings"
 
-
 def filename_for_drawing(drawing_name):
     filename = __UPLOADS__ + '/' + drawing_name + '.svg'
     return filename
