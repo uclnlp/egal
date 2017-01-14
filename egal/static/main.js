@@ -11,7 +11,7 @@ define(['./egal', 'base/js/namespace', 'jquery'], function (egal, Jupyter, $) {
         cell.element.find("div div.input_area > *").toggle();
         var inputArea = cell.element.find("div div.input_area");
         var cellToolBar = cell.element.find(".celltoolbar");
-        var divId = 'egal_' + cell.metadata.egal_id;
+        var divId = 'egal_' + cell.cell_id;
         if (cell.metadata.is_egal) {
             old_color = inputArea.css("background-color");
             inputArea.append($("<div id='" + divId + "'></div>"));
@@ -52,9 +52,6 @@ define(['./egal', 'base/js/namespace', 'jquery'], function (egal, Jupyter, $) {
         // Find the selected cell
         var cell = Jupyter.notebook.get_selected_cell();
         cell.metadata.is_egal = !cell.metadata.is_egal;
-        if (cell.metadata.is_egal && !cell.metadata.egal_id) {
-            cell.metadata.egal_id = cell.cell_id;
-        }
         setup_egal_cell(cell);
     };
 
@@ -63,7 +60,6 @@ define(['./egal', 'base/js/namespace', 'jquery'], function (egal, Jupyter, $) {
         var cell = Jupyter.notebook.insert_cell_below("raw");
         cell.set_text("<svg height='250'></svg>");
         cell.metadata.is_egal = true;
-        cell.metadata.egal_id = cell.cell_id;
         setup_egal_cell(cell);
     };
 
