@@ -178,10 +178,10 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         // });
 
 
-        $("#toFront").click(function () {
+        $(self.container + " .toFront").click(function () {
             self.selectionContext.moveToFront();
         });
-        $("#toBack").click(function () {
+        $(self.container + " .toBack").click(function () {
             self.selectionContext.moveToBack();
         });
 
@@ -1098,13 +1098,17 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
 
         this.moveToFront = function () {
-            this.currentSelection.appendTo(this.currentSelection.paper);
-            // drupyter.background.after(this.currentSelection);
-
+            my$each(this.currentSelection, function (i, elem) {
+                elem.appendTo(elem.paper);
+            });
+            drupyter.saveCurrentSVG();
         };
 
         this.moveToBack = function () {
-            drupyter.background.after(this.currentSelection);
+            my$each(this.currentSelection, function (i, elem) {
+                drupyter.background.after(elem);
+            });
+            drupyter.saveCurrentSVG();
             // this.currentSelection.prependTo(this.currentSelection.paper);
         };
 
