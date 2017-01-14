@@ -322,7 +322,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         this.convertLatex = function (selector) {
             var fontSize = 20;
-            var tmpLatex = $("<div class='temp-latex' style='visibility: hidden'></div>").appendTo(self.jcontainer);
+            var tmpLatex = $("<div class='temp-latex' style='visibility: hidden; position: fixed; top: 0; left:0'></div>").appendTo(self.jcontainer);
             // collect all text elements and create sub divs
             var div2text = {};
             selector.each(function (i, text) {
@@ -331,7 +331,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                     // console.log(text);
                     var source = text.getAttribute("data-src");
                     var id = 'egal-latex' + i;
-                    var div = $("<div class='temp-latex-text' style='font-size: " + fontSize + "px' id='" + id + "'>" + source + "</div>")
+                    var div = $("<div class='temp-latex-text' style='position: fixed; top: 0; left:0; font-size: " + fontSize + "px'; id='" + id + "'>" + source + "</div>")
                         .appendTo(tmpLatex);
                     div2text[id] = text;
                 }
@@ -491,6 +491,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             var cloned = $(self.drawing).clone();
             self.convertLatexBack(cloned.find(".mathjax_text"));
             cloned.find(".transient").remove();
+            cloned.find(".endPoint").css("opacity", 0.0);
             cloned.find("#egal_background").remove();
             cloned.find(".egal-select .core").css({filter: ''});
             self.saveContent(cloned.html());
@@ -618,6 +619,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                     });
                     drupyter.convertLatex($(label.node));
                     self.selectElement(element);
+                    drupyter.saveCurrentSVG();
                     // var labelBbox = label.getBBox();
                     // label.attr({
                     //     // x: bbox.cx - (labelBbox.width / 2),
@@ -641,6 +643,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 });
                 drupyter.jsvg.find(".egal-select").remove();
                 this.selectElement(null);
+                drupyter.saveCurrentSVG();
+
             }
         };
 
@@ -668,6 +672,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                     // console.log(cloned.parent());
                     drupyter.registerElement(cloned);
                 });
+                drupyter.saveCurrentSVG();
                 self.selectElements(created);
             }
         };
@@ -839,6 +844,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                     },
                     function (event) {
                         removeAlignLines();
+                        drupyter.saveCurrentSVG();
 
                         // self.selectElement(elem)
                     }
@@ -982,6 +988,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             removeAlignLines();
             dragging = false;
             dragged = true;
+            drupyter.saveCurrentSVG();
+
         };
 
         function removeAlignLines() {
@@ -1205,8 +1213,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
                 elem2lineN1[id1].push(line);
                 elem2lineN2[id2].push(line);
-
-
+                drupyter.saveCurrentSVG();
                 line = null
             }
         };
@@ -1253,14 +1260,16 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         $(field).focusout(function (e) {
             // console.log(parent);
             // console.log($(field).parent());
-            acceptFunction(textInput.val());
+            var text = textInput.val();
             field.saveRemove();
+            acceptFunction(text);
 
         });
         $(field).keypress(function (e) {
             if (e.keyCode == 13) {
-                acceptFunction(textInput.val());
+                var text = textInput.val();
                 field.saveRemove();
+                acceptFunction(text);
             }
         });
         field.saveRemove = function () {
@@ -1305,7 +1314,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                     'data-src': textVal
                 });
                 drupyter.convertLatex($(text.node));
-
+                drupyter.saveCurrentSVG();
             });
 
         };
