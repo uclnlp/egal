@@ -187,28 +187,34 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         $(self.container + " .wi").change(function () {
             self.jsvg.find(".egal-select .core").css({strokeWidth: $(self.container + " .wi").val()});
+            self.saveCurrentSVG();
         });
         $(self.container + " .fg").change(function () {
             self.jsvg.find(".egal-select .core").attr({stroke: $(self.container + " .fg").val()});
+            self.saveCurrentSVG();
         });
         $(self.container + " .bg").change(function () {
             // var snapSelection = new Snap(self.selectionContext.currentSelection);
             self.jsvg.find(".egal-select .core").attr({fill: $(self.container + " .bg").val()});
+            self.saveCurrentSVG();
         });
         $(self.container + " .height").change(function () {
             self.snap.attr({height: $(self.container + " .height").val()})
+            self.saveCurrentSVG();
         });
         $(self.container + " .endArrow").change(function () {
             // var snapSelection = new Snap(self.selectionContext.currentSelection);
             var checked = $(self.container + " .endArrow").prop('checked');
             var marker = checked ? "url(#" + self.marker.attr('id') + ")" : '';
             self.jsvg.find(".egal-select .egal-line").css({"marker-end": marker});
+            self.saveCurrentSVG();
         });
         $(self.container + " .startArrow").change(function () {
             // var snapSelection = new Snap(self.selectionContext.currentSelection);
             var checked = $(self.container + " .startArrow").prop('checked');
             var marker = checked ? "url(#" + self.startMarker.attr('id') + ")" : '';
             self.jsvg.find(".egal-select .egal-line").css({"marker-start": marker});
+            self.saveCurrentSVG();
         });
 
 
@@ -333,7 +339,9 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         this.convertLatex = function (selector) {
             var fontSize = 20;
-            var tmpLatex = $("<div class='temp-latex' style='visibility: hidden; position: fixed; top: 0; left:0'></div>").appendTo(self.jcontainer);
+            // position: fixed; top: 0; left:0;
+            var height = Number(self.jsvg.attr("height"));
+            var tmpLatex = $("<div class='temp-latex' style='position: relative; top: " + (-height) + "px; visibility: hidden;'></div>").appendTo(self.jcontainer);
             // collect all text elements and create sub divs
             var div2text = {};
             selector.each(function (i, text) {
@@ -342,7 +350,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                     // console.log(text);
                     var source = text.getAttribute("data-src");
                     var id = 'egal-latex' + i;
-                    var div = $("<div class='temp-latex-text' style='position: fixed; top: 0; left:0; font-size: " + fontSize + "px'; id='" + id + "'>" + source + "</div>")
+                    //position: fixed; top: 0; left:0;
+                    var div = $("<div class='temp-latex-text' style='width: 100%; position: absolute; top: 0; left:0; font-size: " + fontSize + "px'; id='" + id + "'>" + source + "</div>")
                         .appendTo(tmpLatex);
                     div2text[id] = text;
                 }
@@ -397,7 +406,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
 
                     tmpLatex.remove();
-                    // console.log("Done!");
+                    console.log("Done!");
                 }
             );
             //Call MathJax.Hub.Queue(["Typeset",..], copy)
@@ -1017,7 +1026,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 var line = drupyter.snap.line(x1.toFixed(0), y1.toFixed(0), x2.toFixed(0), y2.toFixed(0))
                     .attr(attr)
                     .addClass("align-line selection_artifact");
-                drupyter.snap.prepend(line);
+                drupyter.snap.append(line);
             }
 
             my$each(cxBboxes[bbox.cx.toFixed(0)], function (index, otherBbox) {
