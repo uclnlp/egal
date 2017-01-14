@@ -2,8 +2,7 @@ FROM jupyter/minimal-notebook
 
 MAINTAINER Sebastian Riedel <sebastian.riedel@gmail.com>
 
-RUN pip install \
-    git+git://github.com/uclmr/egal.git
+RUN pip install egal
 
 RUN jupyter nbextension install egal --py --sys-prefix
 
