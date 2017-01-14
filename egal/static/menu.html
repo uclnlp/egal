@@ -33,7 +33,7 @@
     .egal-menu-bar {
         margin: 10px;
         font-style: normal;
-        height:20px;
+        height: 20px;
 
         /*all: initial;*/
         /*font-size:100%;*/
@@ -66,49 +66,49 @@
 <div class="egal-menu-bar">
     <div class="icons">
         <ul class="egal-menu">
-            <li class="toggle-visible"><i class="fa fa-toggle-on fa-1x"></i></li>
+            <li data-toggle="tooltip" title="Hide/Show menu" class="toggle-visible"><i class="fa fa-toggle-on fa-1x"></i></li>
         </ul>
         <ul class="egal-menu hideable">
-            <li>
+            <li data-toggle="tooltip" title="Set document height">
                 <input class="height" type="text" size="4" style="font-size: 13px;vertical-align: bottom;"/>
             </li>
-            <li class="save">
-                <i class="fa fa-save fa-1x"></i>
-            </li>
-            <li class="clear">
+            <!--<li class="save" data-toggle="tooltip" title="Save SVG">-->
+                <!--<i class="fa fa-save fa-1x"></i>-->
+            <!--</li>-->
+            <li class="clear" data-toggle="tooltip" title="Clear image">
                 <i class="fa fa-trash fa-1x"></i>
             </li>
 
 
-            <li class="select">
+            <li class="select" data-toggle="tooltip" title="Selection mode">
                 <i class="fa fa-hand-o-right fa-1x"></i>
             </li>
 
             <!--<li class="style" data-toggle="modal" data-target="#myModal">-->
             <!--<i class="fa fa-paint-brush fa-1x"></i>-->
             <!--</li>-->
-            <li class="makeRect">
+            <li data-toggle="tooltip" title="Rectangle creation mode" class="makeRect">
                 <svg viewBox="0 0 20 20" width="13" height="13">
                     <rect x="1" y="1" width="18" height="18" style="fill:none; stroke:black; stroke-width:2"></rect>
                 </svg>
             </li>
-            <li class="makeCircle">
+            <li data-toggle="tooltip" title="Circle creation mode" class="makeCircle">
                 <svg viewBox="0 0 20 20" width="13" height="13">
                     <circle cx="10" cy="10" r="9" style="fill:none; stroke:black; stroke-width:2"></circle>
                 </svg>
             </li>
-            <li class="makeLine">
+            <li data-toggle="tooltip" title="Line creation mode" class="makeLine">
                 <svg viewBox="0 0 20 20" width="13" height="13">
                     <line x1="1" y1="5" x2="19" y2="15" style="fill:none; stroke:black; stroke-width:2"></line>
                 </svg>
             </li>
-            <li class="makeArrow">
+            <li data-toggle="tooltip" title="Connection creation mode" class="makeArrow">
                 <svg viewBox="0 0 20 20" width="13" height="13">
                     <line x1="1" y1="10" x2="19" y2="10" style="fill:none; stroke:black; stroke-width:2"></line>
                     <path d="M 16 7 L 19 10 L 16 13 z" stroke="black" stroke-width="2"></path>
                 </svg>
             </li>
-            <li class="makeText">
+            <li data-toggle="tooltip" title="Text creation mode" class="makeText">
                 <svg viewBox="0 0 20 20" width="13" height="13">
                     <text x="2" y="18" font-family="Times" font-size="22">
                         A
@@ -120,25 +120,25 @@
     </div>
     <div class="style-menu generic-style">
         <ul class="egal-menu hideable">
-            <li class="cut">
+            <li data-toggle="tooltip" title="Remove current selection" class="cut">
                 <i class="fa fa-scissors fa-1x"></i>
             </li>
-            <li class="paste">
+            <li data-toggle="tooltip" title="Paste current selection" class="paste">
                 <i class="fa fa-clipboard fa-1x"></i>
             </li>
-            <li class="toFront">
+            <li data-toggle="tooltip" title="Move current selection to front" class="toFront">
                 <i class="fa fa-arrow-circle-o-up fa-1x"></i>
             </li>
-            <li class="toBack">
+            <li data-toggle="tooltip" title="Move current selection to back" class="toBack">
                 <i class="fa fa-arrow-circle-o-down fa-1x"></i>
             </li>
-            <li>
+            <li data-toggle="tooltip" title="Stroke colour">
                 fg <input class="fg" type="text" size="8"/>
             </li>
-            <li>
+            <li data-toggle="tooltip" title="Background colour">
                 bg <input class="bg" type="text" size="8"/>
             </li>
-            <li>
+            <li data-toggle="tooltip" title="Stroke width">
                 wi <input class="wi" type="text" size="2"/>
             </li>
 
