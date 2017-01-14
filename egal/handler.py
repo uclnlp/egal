@@ -2,9 +2,7 @@ from notebook.base.handlers import IPythonHandler
 import os
 import os.path
 
-__UPLOADS__ = "drawings"
-
-os.makedirs(__UPLOADS__, exist_ok=True)
+__UPLOADS__ = ".drawings"
 
 
 def filename_for_drawing(drawing_name):
@@ -24,6 +22,7 @@ class DrawHandler(IPythonHandler):
             self.finish(result)
 
     def post(self, draw_name):
+        os.makedirs(__UPLOADS__, exist_ok=True)
         body = self.request.body
         f = open(filename_for_drawing(draw_name), 'wb')
         # f.write(str(body))

@@ -17,6 +17,9 @@ egal's focus is on drawing simple graphs:
 * Multiple Selection
 * Copy & Paste
 
+### How Does it Work?
+egal creates a `raw` jupyter cell and stores the edited SVG in the source code field of that cell. 
+
 ### Installation
 
 #### Get the Python Package
