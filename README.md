@@ -4,6 +4,8 @@ easy SVG drawing in jupyter and elsewhere...
 ### Example
 ![](screenshot.png)
 
+### Instructions
+Click on the "brush" icon in the jupyter toolbar to create an SVG cell below the current selection.
 ### Features
 
 egal's focus is on drawing simple graphs:  
