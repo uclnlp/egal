@@ -6,6 +6,10 @@ easy SVG drawing in jupyter and elsewhere...
 
 ### Instructions
 Click on the "brush" icon in the jupyter toolbar to create an SVG cell below the current selection.
+
+To change the label of a shape, double-click on it and type. Hit enter to finish. To use **latex**, start and finish the label
+with `$$` as in `$$\sum_i i$$`.
+
 ### Features
 
 egal's focus is on drawing simple graphs:  
