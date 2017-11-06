@@ -1472,14 +1472,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
     function MakePolyLineContext(drupyter) {
         var line = null;
 
-        this.onClick = function (e, element) {
-            if (line) {
-                line.addClass("core alignable sub egal-line");
-                var group = drupyter.snap.group(line);
-                drupyter.registerAndDecorateElement(group);
-                drupyter.saveCurrentSVG();
-                line = null;
-            } else {
+        this.onMouseDown = function (e, element) {
+            if (!line) {
                 var offset = $(element.node).offset();
                 var x = e.pageX - offset.left;
                 var y = e.pageY - offset.top;
@@ -1490,6 +1484,16 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                     strokeWidth: 1,
                     "vector-effect": "non-scaling-stroke"
                 });
+            }
+        };
+
+        this.onMouseUp = function (e, element) {
+            if (line) {
+                line.addClass("core alignable sub egal-line");
+                var group = drupyter.snap.group(line);
+                drupyter.registerAndDecorateElement(group);
+                drupyter.saveCurrentSVG();
+                line = null;
             }
         };
 
