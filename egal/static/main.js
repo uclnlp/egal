@@ -76,7 +76,7 @@ define(['./egal', 'base/js/namespace', 'jquery'], function (egal, Jupyter, $) {
         console.log("Loading egal ...");
         Jupyter.toolbar.add_buttons_group([{
             id: 'btn-hide-input',
-            label: 'Toggle selected cell input display',
+            label: 'Insert Egal Cell',
             icon: 'fa-paint-brush',
             callback: function () {
                 create_egal();
