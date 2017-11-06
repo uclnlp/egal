@@ -79,6 +79,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         // this.lineContext = new LineContext(this);
         this.connectContext = new ConnectContext(this);
         this.lineContext = new MakeLineContext(this);
+        this.poylineContext = new MakePolyLineContext(this);
         this.currentContext = this.selectionContext;
 
         function linkContextButtonNew(selector, context, update) {
@@ -128,6 +129,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             // console.log("Blah");
         });
         linkContextButtonNew(self.container + " .makeLine", this.lineContext);
+        linkContextButtonNew(self.container + " .makePolyline", this.poylineContext);
 
         // $(self.container + " .toggle-visible").click(function() {
         //     $(self.container + " .toggle-visible i").toggleClass("fa-toggle-on");
@@ -720,7 +722,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         this.createSelectionHandles = function () {
             drupyter.jsvg.find(".selection_artifact").remove();
-            if (this.currentSelection.length == 0)  return;
+            if (this.currentSelection.length == 0) return;
             var bbox = mergeBBoxes(drupyter.snap.selectAll(".egal-select .core"));
 
             // var core = elem.select(".core");
@@ -1411,7 +1413,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                     x: left,
                     y: top,
                     height: height,
-                    width: width,
+                    width: width
                 })
             }
         };
@@ -1457,6 +1459,52 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                     x2: x,
                     y2: y
                 })
+            }
+        };
+
+        this.onClickElement = function (e, element) {
+            // console.log("Selected in MakeCircle Mode");
+        };
+
+
+    }
+
+    function MakePolyLineContext(drupyter) {
+        var line = null;
+
+        this.onClick = function (e, element) {
+            if (line) {
+                line.addClass("core alignable sub egal-line");
+                var group = drupyter.snap.group(line);
+                drupyter.registerAndDecorateElement(group);
+                drupyter.saveCurrentSVG();
+                line = null;
+            } else {
+                var offset = $(element.node).offset();
+                var x = e.pageX - offset.left;
+                var y = e.pageY - offset.top;
+                line = drupyter.snap.path("M" + x + "," + y);
+                line.attr({
+                    fill: "none",
+                    stroke: "#000",
+                    strokeWidth: 1,
+                    "vector-effect": "non-scaling-stroke"
+                });
+            }
+        };
+
+        this.onMouseMove = function (e, element) {
+            if (line) {
+                console.log("Changing ...");
+                var offset = $(element.node).offset();
+                var x = e.pageX - offset.left;
+                var y = e.pageY - offset.top;
+                var points = line.attr("d");
+                console.log(points);
+                points += "L" + x + "," + y;
+                console.log(points);
+
+                line.attr({"d": points});
             }
         };
 
