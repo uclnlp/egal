@@ -1021,6 +1021,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             drupyter.snap.selectAll(".selection_artifact").forEach(function (h) {
                 h.data("orig_transform", h.transform().globalMatrix.toTransformString())
             });
+            cacheAlignables();
         };
 
         this.onDragCoreStart = function (x, y, event, core) {
@@ -1032,10 +1033,10 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             }
             this.onDragBackgroundStart(x, y, event, core);
 
-            cacheAlignables(core);
         };
 
         this.onDragBackgroundEnd = function (event, core) {
+            removeAlignLines();
             dragging = false;
             dragged = true;
             drupyter.saveCurrentSVG();
@@ -1048,7 +1049,6 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 if (event.shiftKey) this.toggleSelection(parent);
                 else this.selectElement(parent);
             }
-            removeAlignLines();
             this.onDragBackgroundEnd(event, core);
         };
 
