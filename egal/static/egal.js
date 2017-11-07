@@ -464,6 +464,17 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             self.background.click(function (e) {
                 if (self.currentContext.onClickBackground) self.currentContext.onClickBackground(e, this);
             });
+            self.background.drag(
+                function (dx, dy, x, y, event) {
+                    if (self.currentContext.onDragBackground) self.currentContext.onDragBackground(dx, dy, x, y, event, this);
+                },
+                function (x, y, event) {
+                    if (self.currentContext.onDragBackgroundStart) self.currentContext.onDragBackgroundStart(x, y, event, this);
+                },
+                function (event) {
+                    if (self.currentContext.onDragBackgroundEnd) self.currentContext.onDragBackgroundEnd(event, this);
+                }
+            );
 
             self.snap.mousemove(function (e) {
                 if (self.currentContext.onMouseMove) self.currentContext.onMouseMove(e, this);
@@ -653,6 +664,29 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         this.onClickBackground = function (e, element) {
             // console.log("OnClick Paper");
+            var elems = drupyter.snap.selectAll(".drupElem");
+            // var elems = drupyter.jsvg.find(".drupElem");
+            var offset = $(element.node).offset();
+            var x = e.pageX - offset.left;
+            var y = e.pageY - offset.top;
+            console.log(offset);
+            console.log([x, y]);
+            for (var i = 0; i < elems.length; i++) {
+                var elem = elems[i];
+                var bbox = elem.getBBox();
+                console.log(bbox);
+                console.log(bbox.x2);
+                console.log(bbox.y2);
+
+                if (x >= bbox.x && x <= bbox.x + bbox.width && y >= bbox.y && y <= bbox.y + bbox.height) {
+                    // console.log(elem);
+                    console.log("Selected");
+                    // blurb = elem;
+                    this.selectElement(elem);
+                    return
+                }
+            }
+            console.log(elems);
             this.selectElement(null);
         };
 
@@ -700,6 +734,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         };
 
         function mergeBBoxes(snapSet) {
+            console.log(snapSet);
             var bbox = null;
             // console.log(snapSet);
             snapSet.forEach(function (c) {
@@ -941,7 +976,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         };
 
 
-        this.onDragCore = function (dx, dy, x, y, event, core) {
+        this.onDragBackground = function (dx, dy, x, y, event, core) {
             // console.log("dragging");
             dragging = true;
             if (core.hasClass("connector")) return;
@@ -964,22 +999,11 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
             drawAlignables(drupyter.snap.select(".selection_box").getBBox());
 
-
         };
-        this.onDragCoreStart = function (x, y, event, core) {
-            // console.log("drag start");
-            var parent = core.parent();
-            // dragging = true;
-            if (this.currentSelection.indexOf(parent) == -1 && !event.shiftKey) {
-                this.selectElement(parent);
-            }
 
-            // if (event.shiftKey) {
-            //     this.toggleSelection(parent);
-            // } else {
-            //     if (this.currentSelection.indexOf(parent) == -1)
-            //         this.selectElement(parent);
-            // }
+        this.onDragCore = this.onDragBackground;
+
+        this.onDragBackgroundStart = function (x, y, event, core) {
             drupyter.snap.selectAll(".egal-select .sub").forEach(function (ep) {
                 ep.data("orig_transform", ep.transform().globalMatrix.toTransformString());
             });
@@ -997,10 +1021,27 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             drupyter.snap.selectAll(".selection_artifact").forEach(function (h) {
                 h.data("orig_transform", h.transform().globalMatrix.toTransformString())
             });
+        };
 
+        this.onDragCoreStart = function (x, y, event, core) {
+            // console.log("drag start");
+            var parent = core.parent();
+            // dragging = true;
+            if (this.currentSelection.indexOf(parent) == -1 && !event.shiftKey) {
+                this.selectElement(parent);
+            }
+            this.onDragBackgroundStart(x, y, event, core);
 
             cacheAlignables(core);
         };
+
+        this.onDragBackgroundEnd = function (event, core) {
+            dragging = false;
+            dragged = true;
+            drupyter.saveCurrentSVG();
+
+        };
+
         this.onDragCoreEnd = function (event, core) {
             var parent = core.parent();
             if (!dragging || this.currentSelection.indexOf(parent) == -1) {
@@ -1008,10 +1049,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 else this.selectElement(parent);
             }
             removeAlignLines();
-            dragging = false;
-            dragged = true;
-            drupyter.saveCurrentSVG();
-
+            this.onDragBackgroundEnd(event, core);
         };
 
         function removeAlignLines() {
@@ -1507,7 +1545,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 lastLine = line;
                 line = null;
                 var d = new Date();
-                lastLineTime= d.getTime();
+                lastLineTime = d.getTime();
             }
         };
 
