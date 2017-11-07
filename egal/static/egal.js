@@ -1491,7 +1491,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             if (line) {
                 line.addClass("core alignable sub egal-line");
                 var group = drupyter.snap.group(line);
-                drupyter.registerAndDecorateElement(group);
+                drupyter.registerElement(group);
                 drupyter.saveCurrentSVG();
                 line = null;
             }
