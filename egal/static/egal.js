@@ -1471,19 +1471,30 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
     function MakePolyLineContext(drupyter) {
         var line = null;
+        var lastLine = null;
+        var lastLineTime = 0;
+        var continuing = false;
 
         this.onMouseDown = function (e, element) {
             if (!line) {
-                var offset = $(element.node).offset();
-                var x = e.pageX - offset.left;
-                var y = e.pageY - offset.top;
-                line = drupyter.snap.path("M" + x + "," + y);
-                line.attr({
-                    fill: "none",
-                    stroke: "#000",
-                    strokeWidth: 1,
-                    "vector-effect": "non-scaling-stroke"
-                });
+                var d = new Date();
+                var now = d.getTime();
+                if (now - lastLineTime > 1000) {
+                    var offset = $(element.node).offset();
+                    var x = e.pageX - offset.left;
+                    var y = e.pageY - offset.top;
+                    line = drupyter.snap.path("M" + x + "," + y);
+                    line.attr({
+                        fill: "none",
+                        stroke: "#000",
+                        strokeWidth: 1,
+                        "vector-effect": "non-scaling-stroke"
+                    });
+                }
+                else {
+                    line = lastLine;
+                    continuing = true;
+                }
             }
         };
 
@@ -1493,7 +1504,10 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 var group = drupyter.snap.group(line);
                 drupyter.registerElement(group);
                 drupyter.saveCurrentSVG();
+                lastLine = line;
                 line = null;
+                var d = new Date();
+                lastLineTime= d.getTime();
             }
         };
 
@@ -1504,10 +1518,12 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 var x = e.pageX - offset.left;
                 var y = e.pageY - offset.top;
                 var points = line.attr("d");
-                console.log(points);
-                points += "L" + x + "," + y;
-                console.log(points);
-
+                if (continuing) {
+                    points += "M" + x + "," + y;
+                    continuing = false;
+                }
+                else
+                    points += "L" + x + "," + y;
                 line.attr({"d": points});
             }
         };
