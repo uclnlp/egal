@@ -13,12 +13,12 @@ define(['./egal', 'base/js/namespace', 'jquery'], function (egal, Jupyter, $) {
         var inputArea = cell.element.find("div div.input_area");
         var cellToolBar = cell.element.find(".celltoolbar");
         if (!hasBeenSetup) {
-            cell.element.find("div div.input_area > *").toggle();
             console.log(cellToolBar);
             console.log(divId);
             console.log(cell.element.find("div div.input_area #" + divId));
             console.log(hasBeenSetup);
-            if (cell.metadata.is_egal) {
+            if (cell.metadata.is_egal && cell.cell_type === "raw") {
+            cell.element.find("div div.input_area > *").toggle();
                 old_color = inputArea.css("background-color");
                 inputArea.append($("<div id='" + divId + "'></div>"));
 
@@ -48,7 +48,7 @@ define(['./egal', 'base/js/namespace', 'jquery'], function (egal, Jupyter, $) {
                 // cell.cell_type = "raw";
             }
 
-        } else if (!cell.metadata.is_egal) {
+        } else if (!(cell.metadata.is_egal && cell.cell_type === "raw")) {
             cell.element.find("div div.input_area #" + divId).remove();
             inputArea.css("background-color", old_color);
             inputArea.css("border-style", "solid");
