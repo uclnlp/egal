@@ -322,10 +322,10 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 var snapLabel = new Snap(label);
                 if (snapLabel.hasClass("mathjax_text")) {
                     var bbox = self.snap.select('#' + snapLabel.parent().attr("id")).getBBox();
-                    console.log(snapLabel.parent());
-                    console.log(snapLabel.parent().attr("id"));
+                    // console.log(snapLabel.parent());
+                    // console.log(snapLabel.parent().attr("id"));
 
-                    console.log(bbox);
+                    // console.log(bbox);
                     var textVal = snapLabel.attr("data-src");
                     var newLabel = snapLabel.paper.text(bbox.cx, bbox.cy, textVal).attr({
                         'font-size': 20,
@@ -334,7 +334,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                         "data-src": textVal,
                     }).addClass("egal-label sub");
                     $(snapLabel.node).replaceWith(newLabel.node);
-                    console.log("Removed!");
+                    // console.log("Removed!");
                 }
             })
         };
@@ -626,10 +626,10 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         };
 
         this.onDblClickElement = function (e, element) {
-            console.log("OnDblClick");
-            console.log(element);
+            // console.log("OnDblClick");
+            // console.log(element);
             var bbox = element.getBBox();
-            console.log(bbox);
+            // console.log(bbox);
             var label = element.select(".egal-label");
             var init = label.attr("data-src") === "|" ? "" : label.attr("data-src");
             label.attr({
@@ -669,24 +669,24 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             var offset = $(element.node).offset();
             var x = e.pageX - offset.left;
             var y = e.pageY - offset.top;
-            console.log(offset);
-            console.log([x, y]);
+            // console.log(offset);
+            // console.log([x, y]);
             for (var i = 0; i < elems.length; i++) {
                 var elem = elems[i];
                 var bbox = elem.getBBox();
-                console.log(bbox);
-                console.log(bbox.x2);
-                console.log(bbox.y2);
+                // console.log(bbox);
+                // console.log(bbox.x2);
+                // console.log(bbox.y2);
 
                 if (x >= bbox.x && x <= bbox.x + bbox.width && y >= bbox.y && y <= bbox.y + bbox.height) {
                     // console.log(elem);
-                    console.log("Selected");
+                    // console.log("Selected");
                     // blurb = elem;
                     this.selectElement(elem);
                     return
                 }
             }
-            console.log(elems);
+            // console.log(elems);
             this.selectElement(null);
         };
 
