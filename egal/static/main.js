@@ -13,10 +13,10 @@ define(['./egal', 'base/js/namespace', 'jquery'], function (egal, Jupyter, $) {
         var inputArea = cell.element.find("div div.input_area");
         var cellToolBar = cell.element.find(".celltoolbar");
         if (!hasBeenSetup) {
-            console.log(cellToolBar);
-            console.log(divId);
-            console.log(cell.element.find("div div.input_area #" + divId));
-            console.log(hasBeenSetup);
+            // console.log(cellToolBar);
+            // console.log(divId);
+            // console.log(cell.element.find("div div.input_area #" + divId));
+            // console.log(hasBeenSetup);
             if (cell.metadata.is_egal && cell.cell_type === "raw") {
             cell.element.find("div div.input_area > *").toggle();
                 old_color = inputArea.css("background-color");
@@ -38,11 +38,11 @@ define(['./egal', 'base/js/namespace', 'jquery'], function (egal, Jupyter, $) {
                 inputArea.css("border-style", "none");
                 cellToolBar.css("border-bottom", "thin solid #CFCFCF");
                 cell.element.click(function () {
-                    console.log("Clicked on Egal!");
+                    // console.log("Clicked on Egal!");
                     cell.keyboard_manager.disable();
 
                     cell.edit_mode();
-                    console.log(cell.mode);
+                    // console.log(cell.mode);
                     // cell.element.get(0).focus();
                 });
                 // cell.cell_type = "raw";
@@ -81,7 +81,7 @@ define(['./egal', 'base/js/namespace', 'jquery'], function (egal, Jupyter, $) {
     };
 
     var load_ipython_extension = function () {
-        console.log("Loading egal ...");
+        // console.log("Loading egal ...");
         Jupyter.toolbar.add_buttons_group([{
             id: 'btn-hide-input',
             label: 'Insert Egal Cell',
@@ -105,24 +105,24 @@ define(['./egal', 'base/js/namespace', 'jquery'], function (egal, Jupyter, $) {
             });
         } else {
             // notebook already loaded. Update directly
-            console.log("Already loaded! ");
+            // console.log("Already loaded! ");
             require(['base/js/events'], function (events) {
                 events.on("create.Cell", function (e, cell) {
-                    console.log("Cell created!");
-                    console.log(cell);
-                    console.log(e);
-                    console.log(cell.cell.metadata);
-                    console.log(cell.cell._metadata);
+                    // console.log("Cell created!");
+                    // console.log(cell);
+                    // console.log(e);
+                    // console.log(cell.cell.metadata);
+                    // console.log(cell.cell._metadata);
                     if (cell.cell.metadata.is_egal) {
                         setup_egal_cell(cell.cell);
                     }
                 });
                 events.on("select.Cell", function (e, cell) {
-                    console.log("Select edit mode!");
-                    console.log(cell);
-                    console.log(e);
-                    console.log(cell.cell.metadata);
-                    console.log(cell.cell._metadata);
+                    // console.log("Select edit mode!");
+                    // console.log(cell);
+                    // console.log(e);
+                    // console.log(cell.cell.metadata);
+                    // console.log(cell.cell._metadata);
                     if (cell.cell.metadata.is_egal) {
                         setup_egal_cell(cell.cell);
                     }

@@ -72,7 +72,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             return 'drup_elem_' + self.currentId;
         };
 
-        console.log("Created Egal");
+        // console.log("Created Egal");
 
         this.makeCircle = new MakeCircleContext(this);
         this.makeRect = new MakeRectangleContext(this);
@@ -87,7 +87,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         function linkContextButtonNew(selector, context, update) {
             $(selector).click(function () {
                 self.currentContext = context;
-                console.log("Button Clicked!");
+                // console.log("Button Clicked!");
                 $(self.container + " .egal-menu li").removeClass("active");
                 $(selector).addClass("active");
                 self.selectionContext.selectElement(null);
@@ -208,14 +208,30 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         });
         $(self.container + " .firstFrameShow").change(function () {
             self.currentFirstFrame = parseInt($(self.container + " .firstFrameShow").val());
+            if (self.currentFirstFrame < 0) {
+                self.currentFirstFrame = 0;
+                $(self.container + " .firstFrameShow").val(self.currentFirstFrame);
+            }
+            if (self.currentFirstFrame > self.currentLastFrame) {
+                self.currentLastFrame = self.currentFirstFrame;
+                $(self.container + " .lastFrameShow").val(self.currentLastFrame);
+            }
             self.hideOutsideFrames();
         });
         $(self.container + " .lastFrameShow").change(function () {
             self.currentLastFrame = parseInt($(self.container + " .lastFrameShow").val());
+            if (self.currentLastFrame < 0) {
+                self.currentLastFrame = 0;
+                $(self.container + " .lastFrameShow").val(self.currentLastFrame);
+            }
+            if (self.currentFirstFrame > self.currentLastFrame) {
+                self.currentFirstFrame = self.currentLastFrame;
+                $(self.container + " .firstFrameShow").val(self.currentFirstFrame);
+            }
             self.hideOutsideFrames();
         });
         linkActionButton(self.container + " .stepForward", function () {
-            console.log("Stepping forward!");
+            // console.log("Stepping forward!");
             self.currentFirstFrame += 1;
             $(self.container + " .firstFrameShow").val(self.currentFirstFrame);
             if (self.currentLastFrame < self.currentFirstFrame) {
@@ -293,9 +309,9 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             var elems = self.snap.selectAll(".drupElem")
             for (var i = 0; i < elems.length; i++) {
                 var elem = $(elems[i].node);
-                console.log(elem);
-                console.log(elem.attr("first-frame"));
-                console.log(elem.attr("last-frame"));
+                // console.log(elem);
+                // console.log(elem.attr("first-frame"));
+                // console.log(elem.attr("last-frame"));
                 var firstFrame = elem.attr("first-frame") === undefined ? 1 : elem.attr("first-frame");
                 var lastFrame = elem.attr("last-frame") === undefined ? 10000 : elem.attr("last-frame");
 
@@ -432,9 +448,9 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 ["Typeset", MathJax.Hub, tmpLatex[0]],
                 function () {
                     //for SVG output
-                    console.log(tmpLatex.find("svg"));
+                    // console.log(tmpLatex.find("svg"));
                     tmpLatex.find("svg").each(function (i, mj) {
-                        console.log(mj);
+                        // console.log(mj);
                         var jmj = $(mj);
                         var text = div2text[mj.parentNode.parentNode.parentNode.id];
                         var bbox = new Snap(text).getBBox();
@@ -475,7 +491,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
 
                     tmpLatex.remove();
-                    console.log("Done!");
+                    // console.log("Done!");
                 }
             );
             //Call MathJax.Hub.Queue(["Typeset",..], copy)
@@ -586,7 +602,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 contentType: "text/xml",
                 dataType: "text",
                 success: function (data, status) {
-                    console.log(data);
+                    // console.log(data);
                 }
             })
         };
@@ -626,7 +642,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 group.append(drupyter.snap.circle(cx - radius, cy, 5).attr(attr).addClass("endPoint left sub"));
                 group.append(drupyter.snap.circle(cx + radius, cy, 5).attr(attr).addClass("endPoint right sub"));
                 // var group = drupyter.snap.group(circle, upEndPoint, downEndPoint, leftEndPoint, rightEndPoint);
-                console.log(group);
+                // console.log(group);
                 drupyter.registerAndDecorateElement(group);
                 drupyter.saveCurrentSVG();
                 circle = null;
@@ -663,7 +679,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         };
 
         this.onClickElement = function (e, element) {
-            console.log("Selected in MakeCircle Mode");
+            // console.log("Selected in MakeCircle Mode");
         }
 
     }
@@ -711,7 +727,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             createForeignTextInput(element, bbox.cx - (bbox.width - 20) / 2, bbox.cy - 15, bbox.width - 20, 20,
                 init, 20,
                 function (textVal) {
-                    console.log(textVal);
+                    // console.log(textVal);
                     drupyter.convertLatexBack($(label.node));
                     label = element.select(".egal-label"); //conversion may have replaced the label.
                     label.attr({
@@ -746,11 +762,9 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             for (var i = 0; i < elems.length; i++) {
                 var elem = elems[i];
                 var bbox = elem.getBBox();
-                // console.log(bbox);
-                // console.log(bbox.x2);
-                // console.log(bbox.y2);
-                if ($(elem.node).is(":visible")) {
+                if (elem.node.style.display !== "none") {
                     if (x >= bbox.x && x <= bbox.x + bbox.width && y >= bbox.y && y <= bbox.y + bbox.height) {
+                        // console.log("Selected");
                         // console.log(elem);
                         // console.log("Selected");
                         // blurb = elem;
@@ -779,10 +793,10 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         this.pasteSelection = function () {
             if (this.currentSelection.length > 0) {
-                console.log("Yo!");
+                // console.log("Yo!");
                 var created = [];
                 my$each(this.currentSelection, function (i, elem) {
-                    console.log(elem);
+                    // console.log(elem);
                     var cloned = elem.clone();
                     // $(cloned.node).find("*").unbind();
                     cloned.selectAll(".sub").forEach(function (e) {
@@ -807,7 +821,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         };
 
         function mergeBBoxes(snapSet) {
-            console.log(snapSet);
+            // console.log(snapSet);
             var bbox = null;
             // console.log(snapSet);
             snapSet.forEach(function (c) {
@@ -1323,7 +1337,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             if (!line) {
                 line = drupyter.snap.line(bbox.cx, bbox.cy, bbox.cx, bbox.cy).attr({
                     stroke: '#000',
-                }).addClass("drupElem connector egal-line");
+                }).addClass("connector egal-line");
                 line.attr("data-n1", endPoint.attr("id"));
                 if (this.arrow) {
                     line.attr({"marker-end": drupyter.marker});
@@ -1510,7 +1524,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         this.onMouseMove = function (e, element) {
             if (rect) {
-                console.log("Changing ...");
+                // console.log("Changing ...");
                 var offset = $(element.node).offset();
                 var x = e.pageX - offset.left;
                 var y = e.pageY - offset.top;
@@ -1562,7 +1576,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         this.onMouseMove = function (e, element) {
             if (line) {
-                console.log("Changing ...");
+                // console.log("Changing ...");
                 var offset = $(element.node).offset();
                 var x = e.pageX - offset.left;
                 var y = e.pageY - offset.top;
@@ -1624,7 +1638,7 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         this.onMouseMove = function (e, element) {
             if (line) {
-                console.log("Changing ...");
+                // console.log("Changing ...");
                 var offset = $(element.node).offset();
                 var x = e.pageX - offset.left;
                 var y = e.pageY - offset.top;
