@@ -63,6 +63,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
         this.menuSVG = container + ' div.menu svg';
         this.currentId = 0;
         this.menuBarListeners = [];
+        this.currentFirstFrame = 1;
+        this.currentLastFrame = 1;
         var self = this;
 
         this.createNewId = function () {
@@ -201,9 +203,39 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             self.saveCurrentSVG();
         });
         $(self.container + " .height").change(function () {
-            self.snap.attr({height: $(self.container + " .height").val()})
+            self.snap.attr({height: $(self.container + " .height").val()});
             self.saveCurrentSVG();
         });
+        $(self.container + " .firstFrameShow").change(function () {
+            self.currentFirstFrame = parseInt($(self.container + " .firstFrameShow").val());
+            self.hideOutsideFrames();
+        });
+        $(self.container + " .lastFrameShow").change(function () {
+            self.currentLastFrame = parseInt($(self.container + " .lastFrameShow").val());
+            self.hideOutsideFrames();
+        });
+        linkActionButton(self.container + " .stepForward", function () {
+            console.log("Stepping forward!");
+            self.currentFirstFrame += 1;
+            $(self.container + " .firstFrameShow").val(self.currentFirstFrame);
+            if (self.currentLastFrame < self.currentFirstFrame) {
+                self.currentLastFrame = self.currentFirstFrame;
+                $(self.container + " .lastFrameShow").val(self.currentLastFrame);
+            }
+            self.hideOutsideFrames();
+
+        });
+        linkActionButton(self.container + " .stepBackward", function () {
+            self.currentLastFrame -= 1;
+            $(self.container + " .lastFrameShow").val(self.currentLastFrame);
+            if (self.currentLastFrame < self.currentFirstFrame) {
+                self.currentFirstFrame = self.currentLastFrame;
+                $(self.container + " .firstFrameShow").val(self.currentFirstFrame);
+            }
+            self.hideOutsideFrames();
+
+        });
+
         $(self.container + " .endArrow").change(function () {
             // var snapSelection = new Snap(self.selectionContext.currentSelection);
             var checked = $(self.container + " .endArrow").prop('checked');
@@ -218,6 +250,16 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             self.jsvg.find(".egal-select .egal-line").css({"marker-start": marker});
             self.saveCurrentSVG();
         });
+        $(self.container + " .firstFrame").change(function () {
+            self.jsvg.find(".egal-select").attr({"first-frame": parseInt($(self.container + " .firstFrame").val())});
+            self.hideOutsideFrames();
+            self.saveCurrentSVG();
+        });
+        $(self.container + " .lastFrame").change(function () {
+            self.jsvg.find(".egal-select").attr({"last-frame": parseInt($(self.container + " .lastFrame").val())});
+            self.hideOutsideFrames();
+            self.saveCurrentSVG();
+        });
 
 
         this.selectionContext.onSelect(function (snapElem) {
@@ -228,6 +270,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 $(self.container + " .wi").val(trimPX(core.attr("strokeWidth")));
                 $(self.container + " .bg").val(Snap.color(core.attr("fill")).hex);
                 $(self.container + " .fg").val(Snap.color(core.attr("stroke")).hex);
+                $(self.container + " .firstFrame").val(snapElem.attr("first-frame"));
+                $(self.container + " .lastFrame").val(snapElem.attr("last-frame"));
                 if (core.hasClass("egal-line")) {
                     $(self.container + " .line-style").show();
                     $(self.container + " .startArrow").prop('checked',
@@ -244,6 +288,25 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             }
         });
 
+
+        this.hideOutsideFrames = function () {
+            var elems = self.snap.selectAll(".drupElem")
+            for (var i = 0; i < elems.length; i++) {
+                var elem = $(elems[i].node);
+                console.log(elem);
+                console.log(elem.attr("first-frame"));
+                console.log(elem.attr("last-frame"));
+                var firstFrame = elem.attr("first-frame") === undefined ? 1 : elem.attr("first-frame");
+                var lastFrame = elem.attr("last-frame") === undefined ? 10000 : elem.attr("last-frame");
+
+                if (lastFrame < self.currentFirstFrame || firstFrame > self.currentLastFrame) {
+                    elem.hide();
+                } else {
+                    elem.show();
+                }
+            }
+
+        };
 
         this.activateElement = function (elem) {
             elem.click(function (e) {
@@ -311,6 +374,10 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
 
         this.registerElement = function (elem) {
             elem.attr({id: self.createNewId()}).addClass("drupElem");
+            elem.attr({
+                "first-frame": self.currentFirstFrame,
+                "last-frame": self.currentLastFrame
+            });
             elem.selectAll(".endPoint").forEach(function (endPoint, index) {
                 endPoint.attr({id: elem.attr("id") + "_endpoint_" + index})
             });
@@ -425,6 +492,9 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             self.snap = Snap($(self.svg).get(0));
             self.jsvg = $(self.svg);
             $(self.container + " .height").val(self.snap.attr("height"));
+            $(self.container + " .firstFrameShow").val(self.currentFirstFrame);
+            $(self.container + " .lastFrameShow").val(self.currentLastFrame);
+
             self.background = self.snap.rect(0, 0, width, height)
                 .attr({opacity: 0.0})
                 .attr({id: "egal_background"}).prependTo(self.snap);
@@ -492,6 +562,8 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
             self.connectContext.loadConnectors();
             // console.log("Set SVG");
             // MathJax.Hub.Queue(["Typeset", MathJax.Hub, self.svg])
+
+            self.hideOutsideFrames();
         };
 
         if (self.options.drawName) {
@@ -677,13 +749,14 @@ define(['jquery', './snap.svg', './text!./menu.html'], function ($, snap, menuTx
                 // console.log(bbox);
                 // console.log(bbox.x2);
                 // console.log(bbox.y2);
-
-                if (x >= bbox.x && x <= bbox.x + bbox.width && y >= bbox.y && y <= bbox.y + bbox.height) {
-                    // console.log(elem);
-                    // console.log("Selected");
-                    // blurb = elem;
-                    this.selectElement(elem);
-                    return
+                if ($(elem.node).is(":visible")) {
+                    if (x >= bbox.x && x <= bbox.x + bbox.width && y >= bbox.y && y <= bbox.y + bbox.height) {
+                        // console.log(elem);
+                        // console.log("Selected");
+                        // blurb = elem;
+                        this.selectElement(elem);
+                        return
+                    }
                 }
             }
             // console.log(elems);

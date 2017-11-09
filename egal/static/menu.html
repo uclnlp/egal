@@ -30,6 +30,10 @@
         opacity: 1.0;
     }
 
+    .egal-menu input {
+        vertical-align: bottom;
+    }
+
     .egal-menu-bar {
         margin: 10px;
         font-style: normal;
@@ -66,14 +70,29 @@
 <div class="egal-menu-bar">
     <div class="icons">
         <ul class="egal-menu">
-            <li data-toggle="tooltip" title="Hide/Show menu" class="toggle-visible"><i class="fa fa-toggle-on fa-1x"></i></li>
+            <li data-toggle="tooltip" title="Hide/Show menu" class="toggle-visible"><i
+                    class="fa fa-toggle-on fa-1x"></i></li>
         </ul>
         <ul class="egal-menu hideable">
             <li data-toggle="tooltip" title="Set document height">
                 <input class="height" type="text" size="4" style="font-size: 13px;vertical-align: bottom;"/>
             </li>
+
+            <li class="stepBackward" data-toggle="tooltip" title="Step Backward">
+                <i class="fa fa-step-backward fa-1x"></i>
+            </li>
+            <li data-toggle="tooltip" title="First Frame">
+                <input class="firstFrameShow" type="text" size="2" style="font-size: 13px;vertical-align: bottom;"/>
+            </li>
+            <li data-toggle="tooltip" title="Last Frame">
+                <input class="lastFrameShow" type="text" size="2" style="font-size: 13px;vertical-align: bottom;"/>
+            </li>
+            <li class="stepForward" data-toggle="tooltip" title="Step Forward">
+                <i class="fa fa-step-forward fa-1x"></i>
+            </li>
+
             <!--<li class="save" data-toggle="tooltip" title="Save SVG">-->
-                <!--<i class="fa fa-save fa-1x"></i>-->
+            <!--<i class="fa fa-save fa-1x"></i>-->
             <!--</li>-->
             <li class="clear" data-toggle="tooltip" title="Clear image">
                 <i class="fa fa-trash fa-1x"></i>
@@ -146,6 +165,12 @@
             </li>
             <li data-toggle="tooltip" title="Stroke width">
                 wi <input class="wi" type="text" size="2"/>
+            </li>
+            <li data-toggle="tooltip" title="First Frame">
+                <i class="fa fa-chevron-right fa-1x"></i> <input class="firstFrame" type="text" size="2"/>
+            </li>
+            <li data-toggle="tooltip" title="Last Frame">
+                <i class="fa fa-chevron-left fa-1x"></i> <input class="lastFrame" type="text" size="2"/>
             </li>
 
         </ul>
