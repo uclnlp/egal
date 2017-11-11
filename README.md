@@ -26,10 +26,12 @@ To click through the animation, set the egal window to `(1,1)`. Then click on th
 egal's focus is on drawing simple graphs:  
 
 * Basic Shapes (circles, rectangles, lines)
+* Freestyle Drawing
 * Connectors
 * Labels, with support for Latex
 * Alignment hints when dragging and resizing
 * Multiple Selection
+* Animation (Build-in & Build-out)
 * Copy & Paste
 
 ## How Does it Work?
