@@ -20,6 +20,9 @@ Using this setup, to generate an animate build-in sequence you can:
 * etc.
 
 To click through the animation, set the egal window to `(1,1)`. Then click on the right arrow which will move the frame window to `(2,2)`, and so on. 
+It will look something like this:
+
+![](noisy-channel-animation.gif)
 
 ## Features
 
